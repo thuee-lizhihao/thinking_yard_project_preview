@@ -256,7 +256,6 @@ canvas {
   gap: 12px;
 }
 
-.btn,
 .button {
   display: inline-flex;
   align-items: center;
@@ -274,31 +273,17 @@ canvas {
   transition: background 0.3s var(--ease), border-color 0.3s var(--ease), color 0.3s var(--ease), transform 0.3s var(--ease);
 }
 
-.btn:hover,
 .button:hover {
   transform: scale(1.02);
 }
 
-.btn-primary,
 .button.is-primary {
   background: var(--apple-blue);
   color: #fff;
 }
 
-.btn-primary:hover,
 .button.is-primary:hover {
   background: var(--apple-blue-hover);
-  color: #fff;
-}
-
-.btn-secondary {
-  background: transparent;
-  border-color: var(--apple-blue);
-  color: var(--apple-blue);
-}
-
-.btn-secondary:hover {
-  background: var(--apple-blue);
   color: #fff;
 }
 
@@ -1012,7 +997,6 @@ canvas {
 .video-container,
 .runtime-chart-container,
 .modern-table-wrapper,
-.bibtex-container,
 .interpolation-panel {
   border-radius: var(--radius-xl);
   background: #fff;
@@ -1409,43 +1393,6 @@ input[type="range"].slider,
 }
 
 /* BibTeX and footer */
-.bibtex-container {
-  position: relative;
-  padding: 22px;
-  border: 1px solid var(--border);
-  box-shadow: none;
-}
-
-.bibtex-container pre {
-  margin: 0;
-  padding-top: 42px;
-  overflow-x: auto;
-  background: transparent;
-  color: var(--apple-black);
-  font-family: "SF Mono", Monaco, "Courier New", monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre;
-}
-
-.copy-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 32px;
-  padding: 7px 12px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--apple-light-gray);
-  color: var(--apple-black);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
 
 .footer .container {
   display: flex;
@@ -1496,56 +1443,10 @@ input[type="range"].slider,
   text-underline-offset: 3px;
 }
 
-.scroll-top {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--apple-blue);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 113, 227, 0.35);
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(16px);
-  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
-  z-index: 9998;
-}
-
-.scroll-top.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.scroll-top:hover {
-  background: var(--apple-blue-hover);
-}
-
 /* Authors */
 .authors-section {
   padding: 80px 0;
   text-align: center;
-}
-
-.author-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: var(--radius-pill);
-  background: var(--apple-light-gray);
-  color: var(--apple-black);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .affiliations {
@@ -1558,7 +1459,7 @@ input[type="range"].slider,
 
 @media screen and (max-width: 1024px) {
   .idea-flow,
-  .stage-grid {
+.stage-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1613,7 +1514,7 @@ input[type="range"].slider,
   }
 
   .filter-item,
-  .filter-item:last-child {
+.filter-item:last-child {
     width: 100%;
     min-width: 0;
   }
@@ -1629,10 +1530,6 @@ input[type="range"].slider,
 
   .interpolation-panel {
     padding: 18px;
-  }
-
-  .bibtex-container pre {
-    font-size: 12px;
   }
 }
 
@@ -1656,17 +1553,12 @@ input[type="range"].slider,
   }
 
   .hero-actions,
-  .hero-badges {
+.hero-badges {
     width: 100%;
   }
 
-  .btn,
   .hero-badge {
     width: 100%;
-  }
-
-  .author-tag {
-    font-size: 13px;
   }
 
   .section-title {
@@ -1677,13 +1569,6 @@ input[type="range"].slider,
     margin-right: -24px;
     margin-left: -24px;
     border-radius: 0;
-  }
-
-  .scroll-top {
-    right: 16px;
-    bottom: 16px;
-    width: 44px;
-    height: 44px;
   }
 }
 

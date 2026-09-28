@@ -15,10 +15,18 @@
     let activeTrigger = toggle;
     let closeTimer;
     let openedByHover = false;
+    let contentsCloseTimer;
+    let contentsOpenedByHover = false;
     const cancelHoverClose = () => window.clearTimeout(closeTimer);
+    const cancelContentsClose = () => window.clearTimeout(contentsCloseTimer);
+    const isDesktopMouse = event => desktop.matches && hoverCapable.matches && event.pointerType === 'mouse';
 
     const closeContents = (restoreFocus = false) => {
+      cancelContentsClose();
+      contentsOpenedByHover = false;
       contents.classList.remove('mobile-open');
+      contents.inert = true;
+      contents.setAttribute('aria-hidden', 'true');
       contentsToggle.setAttribute('aria-expanded', 'false');
       if (restoreFocus) contentsToggle.focus();
     };
@@ -83,12 +91,40 @@
     });
     menu.addEventListener('pointerenter', cancelHoverClose);
     menu.addEventListener('pointerleave', scheduleHoverClose);
-    contentsToggle.addEventListener('click', () => {
-      const open = !contents.classList.contains('mobile-open');
+    const openContents = (focusMenu = true) => {
+      cancelContentsClose();
       closeProjects();
-      contents.classList.toggle('mobile-open', open);
-      contentsToggle.setAttribute('aria-expanded', String(open));
-      if (open) contents.querySelector('a')?.focus({ preventScroll: true });
+      contentsOpenedByHover = !focusMenu;
+      contents.inert = false;
+      contents.setAttribute('aria-hidden', 'false');
+      contents.classList.add('mobile-open');
+      contentsToggle.setAttribute('aria-expanded', 'true');
+      if (focusMenu) contents.querySelector('a')?.focus({ preventScroll: true });
+    };
+    const scheduleContentsClose = event => {
+      if (!isDesktopMouse(event)) return;
+      cancelContentsClose();
+      contentsCloseTimer = window.setTimeout(() => {
+        closeContents(contents.contains(document.activeElement));
+      }, 180);
+    };
+    contentsToggle.addEventListener('pointerenter', event => {
+      if (!isDesktopMouse(event)) return;
+      cancelContentsClose();
+      if (!contents.classList.contains('mobile-open')) openContents(false);
+    });
+    contentsToggle.addEventListener('pointerleave', scheduleContentsClose);
+    contents.addEventListener('pointerenter', cancelContentsClose);
+    contents.addEventListener('pointerleave', scheduleContentsClose);
+    contentsToggle.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        openContents();
+      }
+    });
+    contentsToggle.addEventListener('click', () => {
+      if (contents.classList.contains('mobile-open') && !contentsOpenedByHover) closeContents(true);
+      else openContents();
     });
     backdrop.addEventListener('click', () => closeProjects(true));
     menu.addEventListener('click', event => {
@@ -129,10 +165,10 @@
       nav.inert = scrolled && !nav.classList.contains('menu-open');
       localNav.inert = !scrolled || nav.classList.contains('menu-open');
       if (!scrolled) closeContents();
-      document.getElementById('scrollTop')?.classList.toggle('visible', window.scrollY > 500);
     };
     window.addEventListener('scroll', updateNavigation, { passive: true });
     window.addEventListener('resize', () => { closeContents(); updateNavigation(); });
     updateNavigation();
-    desktop.addEventListener('change', () => closeProjects());
+    desktop.addEventListener('change', () => { closeProjects(); closeContents(); });
+    hoverCapable.addEventListener('change', () => { closeProjects(); closeContents(); });
   })();

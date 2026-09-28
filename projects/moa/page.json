@@ -4,23 +4,51 @@
   "sections": [
     {
       "id": "overview",
-      "label": "Idea"
+      "label": "Overview",
+      "group": "research",
+      "description": "Heterogeneous attention spans"
     },
     {
       "id": "observations",
-      "label": "Observations"
+      "label": "Key insight",
+      "group": "research",
+      "description": "Variation across attention heads"
     },
     {
       "id": "method",
-      "label": "Method"
+      "label": "Method",
+      "group": "research",
+      "description": "Attention-span optimization"
+    },
+    {
+      "id": "calibration",
+      "label": "Calibration",
+      "group": "research",
+      "description": "Long-context influence profiling"
     },
     {
       "id": "results",
-      "label": "Results"
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Accuracy and efficiency"
+    },
+    {
+      "id": "demo",
+      "label": "Demo",
+      "group": "evaluation",
+      "description": "The compression pipeline"
+    },
+    {
+      "id": "authors",
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
     },
     {
       "id": "bibtex",
-      "label": "BibTeX"
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
     }
   ]
 }

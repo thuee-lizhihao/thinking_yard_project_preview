@@ -685,7 +685,7 @@
 </section>
 
 
-<section class="section section-gray authors-section">
+<section class="section section-gray authors-section" id="team">
   <div class="container">
     <div class="section-header section-header-centered reveal">
       <p class="section-eyebrow">Team</p>
@@ -716,17 +716,7 @@
       <p class="section-eyebrow">Citation</p>
       <h2 class="section-title">Cite our work.</h2>
     </div>
-    <div class="bibtex-container reveal">
-      <button class="copy-btn" onclick="copyBibtex()">
-        <i class="fas fa-copy"></i> Copy BibTeX
-      </button>
-      <pre><code id="bibtexCode">@article{fu2025framefusion,
-  title     = {FrameFusion: Combining Similarity and Importance for Video Token Reduction on Large Vision Language Models},
-  author    = {Fu, Tianyu and Liu, Tengxuan and Han, Qinghao and Dai, Guohao and Yan, Shengen and Yang, Huazhong and Ning, Xuefei and Wang, Yu},
-  journal   = {arXiv preprint arXiv:2501.01986},
-  year      = {2025}
-}</code></pre>
-    </div>
+    {{citation}}
   </div>
 </section>
 
@@ -749,7 +739,3 @@
     </div>
   </div>
 </footer>
-
-<button class="scroll-top" id="scrollTop" onclick="scrollToTop()" aria-label="Scroll to top">
-  <i class="fas fa-arrow-up"></i>
-</button>

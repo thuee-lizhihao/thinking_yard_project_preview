@@ -37,29 +37,12 @@
 
     window.addEventListener('scroll', reveal);
 
-    // Scroll to top function
-    function scrollToTop() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     // Toggle expandable sections
     function toggleExpand(header) {
       const section = header.parentElement;
       section.classList.toggle('open');
       const icon = header.querySelector('.expandable-icon i');
       icon.className = section.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
-    }
-
-    // Copy BibTeX function
-    function copyBibtex() {
-      const code = document.getElementById('bibtexCode').textContent;
-      navigator.clipboard.writeText(code).then(() => {
-        const btn = document.querySelector('.copy-btn');
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => {
-          btn.innerHTML = '<i class="fas fa-copy"></i> Copy BibTeX';
-        }, 2000);
-      });
     }
 
     // Switch model size for results tables

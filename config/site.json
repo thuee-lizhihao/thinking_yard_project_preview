@@ -4,10 +4,35 @@
   "origin": "https://fuvty.github.io",
   "basePath": "/thinking_yard_project_page",
   "hubSections": [
-    { "id": "overview", "label": "Overview" },
-    { "id": "route-one", "label": "Continue scaling" },
-    { "id": "route-two", "label": "Better trade-off" },
-    { "id": "route-three", "label": "New scaling axis" },
-    { "id": "projects", "label": "Projects" }
+    {
+      "id": "overview",
+      "label": "Overview",
+      "group": "routes",
+      "description": "One frontier, three routes"
+    },
+    {
+      "id": "route-one",
+      "label": "Continue scaling",
+      "group": "routes",
+      "description": "Continue the current frontier"
+    },
+    {
+      "id": "route-two",
+      "label": "Better trade-off",
+      "group": "routes",
+      "description": "Improve the cost\u2013capability trade-off"
+    },
+    {
+      "id": "route-three",
+      "label": "New scaling axis",
+      "group": "routes",
+      "description": "Introduce a new scaling axis"
+    },
+    {
+      "id": "projects",
+      "label": "Projects",
+      "group": "projects",
+      "description": "Explore the research projects"
+    }
   ]
 }

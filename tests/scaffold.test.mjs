@@ -12,6 +12,8 @@ test('new project command creates source files, registers once, and refuses over
   const registry=JSON.parse(await readFile(join(fixture,'config/projects.json'),'utf8'));
   assert.equal(registry.at(-1).slug,'sample');assert.equal(registry.at(-1).route,'03');
   await access(join(fixture,'projects/sample/content.html'));await access(join(fixture,'projects/sample/static/js/index.js'));
+  await access(join(fixture,'projects/sample/citation.bib'));
+  assert((await readFile(join(fixture,'projects/sample/content.html'),'utf8')).includes('{{citation}}'));
   await assert.rejects(createProject('sample','Sample','context',fixture),/already exists/);
   await assert.rejects(createProject('../escape','Escape','context',fixture),/Usage/);
  } finally {await rm(fixture,{recursive:true,force:true});}

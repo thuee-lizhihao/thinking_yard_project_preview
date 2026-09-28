@@ -4,23 +4,51 @@
   "sections": [
     {
       "id": "overview",
-      "label": "Overview"
+      "label": "Overview",
+      "group": "research",
+      "description": "Communication beyond text"
+    },
+    {
+      "id": "motivation",
+      "label": "Motivation",
+      "group": "research",
+      "description": "Limits of text-based exchange"
     },
     {
       "id": "method",
-      "label": "Method"
+      "label": "Key insight",
+      "group": "research",
+      "description": "Semantics in the KV-Cache"
+    },
+    {
+      "id": "architecture",
+      "label": "Method",
+      "group": "research",
+      "description": "Cache projection and fusion"
     },
     {
       "id": "results",
-      "label": "Results"
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Accuracy and inference speed"
+    },
+    {
+      "id": "contributions",
+      "label": "Summary",
+      "group": "evaluation",
+      "description": "Key research contributions"
     },
     {
       "id": "team",
-      "label": "Team"
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
     },
     {
       "id": "bibtex",
-      "label": "Citation"
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
     }
   ],
   "theme": "research"

@@ -20,3 +20,17 @@ test('navigation escapes names and descriptions as text',()=>{
  const html=renderNavigation({projects:[{...projects[0],name:'<b>unsafe</b>'}],categories,name:'"Page"',sections:[]});
  assert(html.includes('&lt;b&gt;unsafe&lt;/b&gt;'));assert(!html.includes('<b>unsafe</b>'));
 });
+
+test('every research page uses the same section taxonomy and includes team and citation',async()=>{
+ for(const project of projects){
+  const meta=JSON.parse(await readFile(new URL(`../projects/${project.slug}/page.json`,import.meta.url)));
+  assert.deepEqual([...new Set(meta.sections.map(s=>s.group))],['research','evaluation','resources']);
+  assert(meta.sections.some(s=>s.label==='Team'&&s.group==='resources'));
+  assert(meta.sections.some(s=>s.label==='Citation'&&s.group==='resources'));
+  assert(meta.sections.every(s=>s.description?.length));
+  const html=renderNavigation({projects,categories,sections:meta.sections});
+  assert.equal((html.match(/class="sp-contents-group"/g)||[]).length,3);
+  for(const s of meta.sections) assert(html.includes(`href="#${s.id}"`));
+ }
+ assert.throws(()=>renderNavigation({projects,categories,sections:[{id:'x',label:'X',group:'typo'}]}),/Unknown section group/);
+});

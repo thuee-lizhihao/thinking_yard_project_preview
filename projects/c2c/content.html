@@ -83,7 +83,7 @@
 </section>
 
 <!-- Motivation Section -->
-<section class="section">
+<section class="section" id="motivation">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Motivation</p>
@@ -208,7 +208,7 @@
 </section>
 
 <!-- Architecture Section -->
-<section class="section">
+<section class="section" id="architecture">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Architecture</p>
@@ -348,7 +348,7 @@
 </section>
 
 <!-- Contributions Section -->
-<section class="section">
+<section class="section" id="contributions">
   <div class="container">
     <div class="results-header reveal">
       <p class="section-eyebrow">Summary</p>
@@ -431,25 +431,7 @@
       </p>
     </div>
 
-    <div class="reveal" style="margin-top: 32px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <span style="font-size: 14px; font-weight: 600; color: var(--apple-black);">
-          <i class="fas fa-quote-left" style="margin-right: 8px; color: var(--apple-gray);"></i>
-          BibTeX
-        </span>
-        <button class="copy-btn" onclick="copyBibtex()" style="position: static;">
-          <i class="fas fa-copy"></i> Copy BibTeX
-        </button>
-      </div>
-      <div class="bibtex-container" style="margin-top: 0;">
-        <pre><code id="bibtexCode">@article{fu2025c2c,
-  title={Cache-to-Cache: Direct Semantic Communication Between Large Language Models},
-  author={Fu, Tianyu and Min, Zihan and Zhang, Hanling and Yan, Jichao and Dai, Guohao and Ouyang, Wanli and Wang, Yu},
-  journal={arXiv preprint arXiv:2510.03215},
-  year={2025}
-}</code></pre>
-      </div>
-    </div>
+    {{citation}}
   </div>
 </section>
 
@@ -478,9 +460,7 @@
 </footer>
 
 <!-- Scroll to Top Button -->
-<button class="scroll-top" id="scrollTop" onclick="scrollToTop()">
-  <i class="fas fa-chevron-up"></i>
-</button>
+
 
 <script>
 // === Hero WebGL Flow Background — Two-point communication ripples ===

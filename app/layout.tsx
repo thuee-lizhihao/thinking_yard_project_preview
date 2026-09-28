@@ -3,6 +3,7 @@ import { basePath, siteURL } from '../config/paths.mjs';
 import '../shared/styles/tokens.css';
 import '../hub/styles.css';
 import '../shared/navigation/styles.css';
+import '../shared/ui/styles.css';
 const base = basePath();
 const url = siteURL();
 export const metadata: Metadata = {

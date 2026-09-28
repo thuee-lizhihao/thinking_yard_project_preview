@@ -16,46 +16,6 @@
     section.classList.toggle("open");
   };
 
-  window.scrollToTop = function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  window.copyBibtex = function copyBibtex() {
-    const code = document.getElementById("bibtexCode");
-    const button = document.querySelector(".copy-btn");
-    if (!code || !button) return;
-
-    const text = code.textContent;
-    const markCopied = () => {
-      button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-      setTimeout(() => {
-        button.innerHTML = '<i class="fas fa-copy"></i> Copy BibTeX';
-      }, 2000);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(markCopied).catch(() => {
-        fallbackCopy(text);
-        markCopied();
-      });
-    } else {
-      fallbackCopy(text);
-      markCopied();
-    }
-  };
-
-  function fallbackCopy(text) {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "absolute";
-    textarea.style.left = "-9999px";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-  }
-
   // ── Hero: heterogeneous elastic attention field ──────────────────
   // Each cropped causal matrix represents one attention head. Heads share
   // the same growing context length N, while their kept spans follow

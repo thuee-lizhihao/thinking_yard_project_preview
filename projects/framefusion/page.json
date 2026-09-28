@@ -4,23 +4,45 @@
   "sections": [
     {
       "id": "overview",
-      "label": "Idea"
+      "label": "Overview & method",
+      "group": "research",
+      "description": "Combine merging and pruning"
     },
     {
       "id": "observations",
-      "label": "Observations"
+      "label": "Key insight",
+      "group": "research",
+      "description": "Redundancy in video tokens"
     },
     {
       "id": "examples",
-      "label": "Examples"
+      "label": "Examples",
+      "group": "evaluation",
+      "description": "Answers with fewer tokens"
     },
     {
       "id": "results",
-      "label": "Results"
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Benchmarks and runtime"
+    },
+    {
+      "id": "demo",
+      "label": "Demo",
+      "group": "evaluation",
+      "description": "Original and reduced frames"
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
     },
     {
       "id": "bibtex",
-      "label": "BibTeX"
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
     }
   ]
 }

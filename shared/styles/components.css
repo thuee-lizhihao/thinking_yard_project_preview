@@ -23,29 +23,6 @@ html {
   padding: 0 24px;
 }
 
-.authors-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 32px;
-}
-
-.author-tag:hover {
-  background: var(--apple-blue);
-  color: #fff;
-}
-
-.author-tag sup {
-  font-size: 10px;
-  opacity: 0.6;
-}
-
-.copy-btn:hover {
-  background: var(--apple-blue);
-  color: #fff;
-}
-
 .expandable-section.open .expandable-header::before {
   width: 4px;
   opacity: 1;

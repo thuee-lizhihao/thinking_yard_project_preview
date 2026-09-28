@@ -209,55 +209,7 @@ export default function Home() {
   const ambientTimeRef = useRef<number | null>(null);
   const ambientFrameRef = useRef(0);
   const ambientVisibleSinceRef = useRef(0);
-  const backToTopCleanupRef = useRef<(() => void) | null>(null);
   const [activeStage, setActiveStage] = useState(0);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-
-  const returnToTop = useCallback(() => {
-    backToTopCleanupRef.current?.();
-
-    const root = document.documentElement;
-    const previousScrollSnapType = root.style.scrollSnapType;
-    const previousScrollBehavior = root.style.scrollBehavior;
-    let framesAtTop = 8;
-    let frame = 0;
-    let active = true;
-
-    const cleanup = () => {
-      if (!active) return;
-      active = false;
-      if (frame) cancelAnimationFrame(frame);
-      root.style.scrollSnapType = previousScrollSnapType;
-      root.style.scrollBehavior = previousScrollBehavior;
-      backToTopCleanupRef.current = null;
-    };
-
-    backToTopCleanupRef.current = cleanup;
-    root.style.scrollSnapType = "none";
-    root.style.scrollBehavior = "auto";
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    if (window.location.hash) {
-      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
-    }
-
-    // Hold the exact endpoint for a few frames so any in-flight anchor scroll
-    // is fully cancelled before mandatory snapping is restored.
-    const holdAtTop = () => {
-      if (!active) return;
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      framesAtTop -= 1;
-      if (framesAtTop > 0) {
-        frame = requestAnimationFrame(holdAtTop);
-      } else {
-        cleanup();
-      }
-    };
-    frame = requestAnimationFrame(holdAtTop);
-  }, []);
-
-  useEffect(() => () => {
-    backToTopCleanupRef.current?.();
-  }, []);
 
   const drawChart = useCallback((focus: number[], reveal: number[]) => {
     const canvas = canvasRef.current;
@@ -812,7 +764,6 @@ export default function Home() {
 
     const update = (forceDraw = false) => {
       frameRef.current = 0;
-      setShowBackToTop(window.scrollY > 500);
       const centers = stepRefs.current.map((element) => {
         if (!element) return 0;
         const rect = element.getBoundingClientRect();
@@ -1138,19 +1089,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <button
-        type="button"
-        className={`back-to-top ${showBackToTop ? "is-visible" : ""}`}
-        aria-label="Back to top"
-        aria-hidden={!showBackToTop}
-        tabIndex={showBackToTop ? 0 : -1}
-        onClick={returnToTop}
-      >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-          <path d="m6.5 14.5 5.5-5 5.5 5" />
-        </svg>
-      </button>
 
       <footer>
         <div className="footer-primary">

@@ -1293,7 +1293,7 @@
 </section>
 
 <!-- Contributions Section -->
-<section class="section">
+<section class="section" id="contributions">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Contributions</p>
@@ -1320,7 +1320,7 @@
 </section>
 
 <!-- Authors Section -->
-<section class="section section-gray authors-section">
+<section class="section section-gray authors-section" id="team">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Team</p>
@@ -1363,29 +1363,7 @@
         If you find TaH useful for your research, please consider citing our paper.
       </p>
     </div>
-    <div class="reveal" style="margin-top: 32px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <span style="font-size: 14px; font-weight: 600; color: var(--apple-black);">
-          <i class="fas fa-quote-left" style="margin-right: 8px; color: var(--apple-gray);"></i>
-          BibTeX
-        </span>
-        <button class="copy-btn" onclick="copyBibtex()" style="position: static;">
-          <i class="fas fa-copy"></i> Copy BibTeX
-        </button>
-      </div>
-      <div class="bibtex-container">
-        <pre id="bibtexCode">@inproceedings{fu2026think,
-  title={Think-at-Hard: Selective Latent Iterations to Improve Reasoning Language Models},
-  author={Fu, Tianyu and You, Yichen and Chen, Zekai and Dai, Guohao and Yang, Huazhong and Wang, Yu},
-  booktitle={Proceedings of the 43rd International Conference on Machine Learning (ICML 2026)},
-  series={Proceedings of Machine Learning Research},
-  volume={306},
-  address={Seoul, South Korea},
-  note={Best Paper Shortlist, ICLR 2025 LIT Workshop},
-  year={2026}
-}</pre>
-      </div>
-    </div>
+    {{citation}}
   </div>
 </section>
 
@@ -1410,6 +1388,3 @@
 </footer>
 
 <!-- Scroll to Top Button -->
-<button class="scroll-top" id="scrollTop" onclick="scrollToTop()">
-  <i class="fas fa-arrow-up"></i>
-</button>

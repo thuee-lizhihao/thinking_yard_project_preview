@@ -3,20 +3,46 @@
   "description": "Roads to Rome (R2R) - Neural token routing for efficient LLM inference",
   "sections": [
     {
+      "id": "problem",
+      "label": "Overview",
+      "group": "research",
+      "description": "The cost of LLM inference"
+    },
+    {
       "id": "insight",
-      "label": "Key Insight"
+      "label": "Key insight",
+      "group": "research",
+      "description": "Token-level reasoning demands"
     },
     {
       "id": "method",
-      "label": "Method"
+      "label": "Method",
+      "group": "research",
+      "description": "Neural token routing"
     },
     {
       "id": "demo",
-      "label": "Demo"
+      "label": "Demo",
+      "group": "evaluation",
+      "description": "Routing decisions in action"
     },
     {
       "id": "results",
-      "label": "Results"
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Accuracy and inference cost"
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
+    },
+    {
+      "id": "bibtex",
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
     }
   ],
   "theme": "research"

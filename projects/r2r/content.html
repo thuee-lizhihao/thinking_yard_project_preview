@@ -1063,7 +1063,7 @@
 </section>
 
 <!-- Authors Section -->
-<section class="section section-gray authors-section">
+<section class="section section-gray authors-section" id="team">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Team</p>
@@ -1104,7 +1104,7 @@
 </section>
 
 <!-- Citation Section -->
-<section class="section">
+<section class="section" id="bibtex">
   <div class="container">
     <div class="reveal">
       <p class="section-eyebrow">Citation</p>
@@ -1114,25 +1114,7 @@
       </p>
     </div>
 
-    <div class="reveal" style="margin-top: 32px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <span style="font-size: 14px; font-weight: 600; color: var(--apple-black);">
-          <i class="fas fa-quote-left" style="margin-right: 8px; color: var(--apple-gray);"></i>
-          BibTeX
-        </span>
-        <button class="copy-btn" onclick="copyBibtex()" style="position: static;">
-          <i class="fas fa-copy"></i> Copy BibTeX
-        </button>
-      </div>
-      <div class="bibtex-container" style="margin-top: 0;">
-        <pre><code id="bibtexCode">@article{fu2025r2r,
-          title={R2R: Efficiently Navigating Divergent Reasoning Paths with Small-Large Model Token Routing},
-          author={Fu, Tianyu and Ge, Yi and You, Yichen and Liu, Enshu and Yuan, Zhihang and Dai, Guohao and Yan, Shengen and Yang, Huazhong and Wang, Yu},
-          journal={arXiv preprint arXiv:2505.21600},
-          year={2025}
-        }</code></pre>
-      </div>
-    </div>
+    {{citation}}
   </div>
 </section>
 
@@ -1161,9 +1143,7 @@
 </footer>
 
 <!-- Scroll to Top Button -->
-<button class="scroll-top" id="scrollTop" onclick="scrollToTop()">
-  <i class="fas fa-chevron-up"></i>
-</button>
+
 
 <script>
 // Expandable sections with smooth animation
@@ -1178,23 +1158,6 @@ function toggleExpand(header) {
   section.classList.toggle('open');
   const icon = header.querySelector('.expandable-icon i');
   icon.className = section.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
-}
-
-// Copy BibTeX
-function copyBibtex() {
-  const code = document.getElementById('bibtexCode').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-    setTimeout(() => {
-      btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-    }, 2000);
-  });
-}
-
-// Scroll to top
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Scroll reveal animation

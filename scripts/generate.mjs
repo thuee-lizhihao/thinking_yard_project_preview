@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderNavigation } from '../shared/navigation/render.mjs';
+import { renderBackToTop, renderCitation } from '../shared/ui/render.mjs';
 import { basePath, siteURL } from '../config/paths.mjs';
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const json = async path => JSON.parse(await readFile(resolve(root,path),'utf8'));
@@ -23,9 +24,10 @@ export async function generate({clean = false} = {}) {
   for (const project of projects) {
     const source = resolve(root,'projects',project.slug);
     const output = resolve(root,'public/projects',project.slug);
-    const [meta,head,body] = await Promise.all([
-      json(`projects/${project.slug}/page.json`),readFile(resolve(source,'head.html'),'utf8'),readFile(resolve(source,'content.html'),'utf8'),
+    const [meta,head,body,bibtex] = await Promise.all([
+      json(`projects/${project.slug}/page.json`),readFile(resolve(source,'head.html'),'utf8'),readFile(resolve(source,'content.html'),'utf8'),readFile(resolve(source,'citation.bib'),'utf8'),
     ]);
+    if ((body.match(/\{\{citation\}\}/g) || []).length !== 1) throw new Error(`${project.slug}: content.html must contain one {{citation}} slot`);
     await mkdir(output,{recursive:true});
     await cp(resolve(source,'static'),resolve(output,'static'),{recursive:true});
     const nav = renderNavigation({projects,categories,current:project.slug,name:project.name,sections:meta.sections,base});
@@ -39,10 +41,13 @@ export async function generate({clean = false} = {}) {
 <meta property="og:title" content="${escape(meta.title)}"><meta property="og:description" content="${escape(meta.description)}"><meta property="og:url" content="${escape(url)}"><meta property="og:type" content="website">
 ${head.replaceAll('{{base}}',base).replace(/<link[^>]+href="\.\/static\/css\/index\.css[^"]*"[^>]*>/, match => `${styles}\n${match}`)}
 <link rel="stylesheet" href="${base}/shared/navigation/styles.css">
+<link rel="stylesheet" href="${base}/shared/ui/styles.css">
 <script defer src="${base}/shared/navigation/controller.js"></script>
+<script defer src="${base}/shared/ui/controller.js"></script>
 </head><body>
 ${nav}
-${body}
+${body.replaceAll('{{citation}}',renderCitation(bibtex))}
+${renderBackToTop()}
 </body></html>\n`;
     await writeFile(resolve(output,'index.html'),html);
   }

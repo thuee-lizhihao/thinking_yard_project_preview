@@ -1,0 +1,22 @@
+[
+  {
+    "id": "research",
+    "label": "Research"
+  },
+  {
+    "id": "evaluation",
+    "label": "Evaluation"
+  },
+  {
+    "id": "resources",
+    "label": "Resources"
+  },
+  {
+    "id": "routes",
+    "label": "Scaling routes"
+  },
+  {
+    "id": "projects",
+    "label": "Projects"
+  }
+]

@@ -80,27 +80,6 @@ body {
   margin-top: 4px;
 }
 
-.btn.btn-primary {
-  background: var(--apple-blue);
-  color: #fff;
-}
-
-.btn.btn-primary:hover {
-  background: var(--apple-blue-hover);
-  transform: scale(1.02);
-}
-
-.btn.btn-secondary {
-  background: transparent;
-  color: var(--apple-blue);
-  border: 1px solid var(--apple-blue);
-}
-
-.btn.btn-secondary:hover {
-  background: var(--apple-blue);
-  color: #fff;
-}
-
 .section {
   padding: var(--section-padding);
 }
@@ -149,20 +128,6 @@ body {
 .authors-section {
   text-align: center;
   padding: 80px 0;
-}
-
-.author-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  background: var(--apple-light-gray);
-  border-radius: 980px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--apple-black);
-  text-decoration: none;
-  transition: all 0.2s ease;
 }
 
 .problem-visual {
@@ -217,35 +182,6 @@ body {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
-}
-
-.bibtex-container {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 0;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.bibtex-container pre {
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  overflow-x: auto;
-  margin: 0;
-  color: var(--apple-black);
-}
-
-.copy-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background: var(--apple-light-gray);
-  color: var(--apple-black);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .expandable-section {
@@ -370,9 +306,4 @@ body {
   color: #fff;
   text-decoration: none;
   transition: all 0.2s ease;
-}
-
-.scroll-top.visible {
-  opacity: 1;
-  visibility: visible;
 }

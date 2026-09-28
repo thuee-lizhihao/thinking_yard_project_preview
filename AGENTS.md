@@ -7,9 +7,10 @@ This is the unified Thinking Yard / NICS-EFC research site. Work only in source 
 - Project names, descriptions, category membership, logos and routes: `config/projects.json`.
 - Category labels: `config/categories.json`.
 - All navigation markup, state and styling: `shared/navigation/`.
+- Back-to-top and citation markup/behavior, CTA and author-pill styling: `shared/ui/`. Do not reintroduce project-specific copies.
 - Visual tokens: `shared/styles/tokens.css`; common components: `shared/styles/components.css` and `research.css`.
 - Read `docs/design-system.md` before broad visual changes.
-- A project contains `page.json`, `head.html`, `content.html`, and `static/`. Do not duplicate navigation or embed another project registry in it.
+- A project contains `page.json`, `head.html`, `content.html`, `citation.bib`, and `static/`. Place exactly one `{{citation}}` slot in content.html. Do not duplicate navigation or embed another project registry in it.
 
 ## Approved navigation
 
@@ -17,6 +18,8 @@ This is the unified Thinking Yard / NICS-EFC research site. Work only in source 
 - At >=900px, three categories are centered and open on mouse hover; the panel keeps the project's logo and description. Delay pointer-leave dismissal by 180ms so crossing into the panel works. Keep click and keyboard access.
 - Narrow/touch layouts use All projects with the same three groups.
 - After scrolling more than 8px, retract global navigation. The local bar contains only the project title and On this page, with a section dropdown.
+- On this page opens on desktop mouse hover with a 180ms leave grace period, reversible entrance/exit transitions, and no hover focus stealing. Preserve click/touch and ArrowDown/Escape access; closed contents are inert.
+- Section metadata uses the shared Research / Evaluation / Resources taxonomy (`config/section-groups.json`), with short descriptions. Preserve existing anchors; label authors as Team and BibTeX as Citation. The hub uses Scaling routes / Projects instead.
 - Bar labels use one 13px token; the project title is distinguished by weight. Controls have 44px tap height.
 - Use restrained entrance animation and respect reduced motion.
 

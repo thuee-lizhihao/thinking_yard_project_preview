@@ -3,20 +3,46 @@
   "description": "Think-at-Hard (TaH) - Selective Latent Iterations to Improve Reasoning Language Models",
   "sections": [
     {
+      "id": "overview",
+      "label": "Overview",
+      "group": "research",
+      "description": "Selective latent thinking"
+    },
+    {
       "id": "insight",
-      "label": "Key Insight"
+      "label": "Key insight",
+      "group": "research",
+      "description": "Where extra thinking helps"
     },
     {
       "id": "architecture",
-      "label": "Architecture"
+      "label": "Method",
+      "group": "research",
+      "description": "Adaptive latent iterations"
     },
     {
       "id": "results",
-      "label": "Results"
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Reasoning benchmarks"
+    },
+    {
+      "id": "contributions",
+      "label": "Summary",
+      "group": "evaluation",
+      "description": "Key research contributions"
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
     },
     {
       "id": "bibtex",
-      "label": "BibTeX"
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
     }
   ],
   "theme": "research"
