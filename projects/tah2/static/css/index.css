@@ -7,17 +7,12 @@ img,svg{max-width:100%}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:absolute;left:-999px;top:8px;background:var(--blue);color:#fff;padding:8px 14px;border-radius:999px;z-index:20000}
 .skip:focus{left:12px}
-.wrap{max-width:var(--max-narrow);margin:0 auto;padding:0 24px}
-.wrap.wide{max-width:var(--max)}
 .ico{width:1em;height:1em;flex-shrink:0}
 .grad{background:var(--tah-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* ---------- Navigation ---------- */
 
 /* ---------- Hero ---------- */
-/* Sections that carry .wrap themselves get a full-width background via a pseudo-element. */
-.section.wrap{position:relative;isolation:isolate}
-.section.wrap::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);z-index:-1;background:var(--bleed,transparent)}
 .hero-tagline em{font-style:normal;color:var(--black);font-weight:600}
 .hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:34px}
 .hero-metrics{display:flex;justify-content:center;gap:56px;margin:52px auto 0;flex-wrap:wrap}
@@ -56,7 +51,6 @@ img,svg{max-width:100%}
 .teaser-caption{border-top:1px solid var(--line);background:#fbfbfd;padding:12px 22px;font-size:12px;line-height:1.6;color:var(--gray);text-align:center}
 
 /* ---------- Sections ---------- */
-.section.wrap{padding-left:24px;padding-right:24px}
 .section-intro{font-size:21px;line-height:1.45;color:var(--gray-2);margin-top:18px;max-width:640px;letter-spacing:-.02em}
 .section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:40px}
 .subtle-link{font-size:14px;font-weight:500;white-space:nowrap}
@@ -78,7 +72,7 @@ img,svg{max-width:100%}
 .technical-detail p strong{color:var(--black);font-weight:600}
 
 /* ---------- Insight (dark section, mirrors the TaH Key Insight section) ---------- */
-#insight{--bleed:#000;color:#f5f5f7}
+#insight{color:#f5f5f7}
 #insight .section-kicker{color:#a78bfa}
 #insight .ico{width:1em;height:1em;flex-shrink:0}
 .grad{background:linear-gradient(135deg,#a78bfa 0%,#c084fc 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -117,7 +111,6 @@ img,svg{max-width:100%}
 .method-principles p{font-size:15px;line-height:1.6;color:var(--gray-2)}
 
 /* ---------- Results ---------- */
-#results{--bleed:var(--light)}
 #results .paper-figure{background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.05)}
 #results .paper-figure-top{background:#fbfbfd}
 .scaling-grid{display:grid;grid-template-columns:1fr 1fr;background:#fff}
@@ -132,7 +125,6 @@ img,svg{max-width:100%}
 .loss-figure>img{max-width:900px;margin:0 auto}
 
 /* ---------- Generalization ---------- */
-#generalization{--bleed:#fff}
 .domain-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .domain-card{background:var(--light);border-radius:var(--radius);padding:28px 26px;transition:transform .25s,box-shadow .25s}
 .domain-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
@@ -163,7 +155,7 @@ img,svg{max-width:100%}
   .domain-cards{grid-template-columns:repeat(2,1fr)}
   .benchmark-bars{grid-template-columns:repeat(2,1fr)}
 }
-@media(max-width:800px){.section.wrap{padding-left:24px;padding-right:24px}.section-intro{font-size:18px}
+@media(max-width:800px){.section-intro{font-size:18px}
   .section-heading{flex-direction:column;align-items:flex-start;gap:16px;margin-bottom:28px}
   .hero-metrics{gap:30px}.hero-metrics strong{font-size:40px}.hero-metrics a{min-width:130px}
   .teaser-grid{grid-template-columns:1fr}
@@ -215,7 +207,6 @@ img,svg{max-width:100%}
 #insight .teaser svg [stroke="#777777"],#insight .teaser svg [fill="#777777"]{stroke:#9a9a9f;fill:#9a9a9f}
 #insight .teaser svg path[fill="none"][stroke="#777777"]{fill:none}
 #insight .teaser svg text[fill="#777777"]{fill:#9a9a9f;stroke:none}
-#tokens{--bleed:#fff}
 #tokens .subtle-link{display:inline-block;margin-top:20px}
 #tokens .fine-print{color:var(--gray)}
 
@@ -304,7 +295,7 @@ img,svg{max-width:100%}
   line-height: 1.8;
 }
 .affiliations span{font-size:12px}
-.citation-section{background:#fff;padding:100px 0}
+.citation-section{background:#fff}
 
 .evidence-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
 
@@ -347,7 +338,6 @@ main { padding-top: 0; }
 .grad { background: var(--c2c-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .section-intro { color: var(--apple-gray); max-width: 680px; line-height: 1.47; }
 .section-title { text-wrap: balance; }
-#insight { --bleed: var(--apple-black); }
 #insight .section-kicker { color: var(--apple-blue-dark); }
 #insight .grad { background: linear-gradient(135deg,#a78bfa 0%,#c084fc 100%); -webkit-background-clip: text; background-clip: text; }
 #insight .teaser { background: rgba(255,255,255,.04); border-radius: 18px; }
@@ -361,7 +351,7 @@ main { padding-top: 0; }
 .technical-detail summary { min-height: 56px; }
 .technical-detail summary:focus-visible, .segmented button:focus-visible, .teaser-controls button:focus-visible { outline: 2px solid var(--apple-blue); outline-offset: 3px; }
 figure[id] { scroll-margin-top: 76px; }
-.team-section { text-align: center; background: var(--apple-light-gray); padding: 80px 0; }
+.team-section { text-align: center; background: var(--apple-light-gray); }
 @media (hover:hover) and (pointer:fine) {
   .method-principles > div:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
 }

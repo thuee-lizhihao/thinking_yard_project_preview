@@ -12,7 +12,7 @@ Integrated from the sibling `tah2-project-page/` directory. The original is unch
 
 ## Editing
 
-Edit `content.html` for research copy and structure, `citation.bib` for the citation, and `static/css/index.css` only for project-specific charts/layout. Do not copy navigation or shared UI logic into this project.
+Edit `content.html` for research copy and structure, `citation.bib` for the citation, and `static/css/index.css` only for project-specific charts/layout. Do not copy navigation or shared UI logic into this project. Keep each full-width `.section` separate from its inner `.container`: section padding and background come from the shared theme, while the container only limits content width. Do not put a zero-vertical-padding wrapper on the section itself.
 
 The original `static/js/data.js`, paper, PDF figures and scientific SVGs were copied unchanged. `static/js/index.js` retains chart animation, model/batch controls, token-depth demonstrations and reduced-motion support; citation copying is handled by the shared controller. Do not adjust plotted data, ratios or chart geometry merely for styling.
 
