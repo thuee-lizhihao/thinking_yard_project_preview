@@ -1,0 +1,23 @@
+{
+  "title": "thu-nics/R2R",
+  "description": "Roads to Rome (R2R) - Neural token routing for efficient LLM inference",
+  "sections": [
+    {
+      "id": "insight",
+      "label": "Key Insight"
+    },
+    {
+      "id": "method",
+      "label": "Method"
+    },
+    {
+      "id": "demo",
+      "label": "Demo"
+    },
+    {
+      "id": "results",
+      "label": "Results"
+    }
+  ],
+  "theme": "research"
+}

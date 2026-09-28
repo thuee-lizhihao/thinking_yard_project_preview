@@ -1,0 +1,38 @@
+[
+  {
+    "project": "c2c",
+    "repository": "https://github.com/fuvty/C2C_Project_Page.git",
+    "sourceCommit": "a1e178d6b3dfaf1e8e603c69c50c25b4508f7023",
+    "includesLocalEdits": true
+  },
+  {
+    "project": "tah",
+    "repository": "https://github.com/fuvty/TaH_project_page.git",
+    "sourceCommit": "fae6a9ef847c88b3d8d7f7289b0ec2e80460cb96",
+    "includesLocalEdits": true
+  },
+  {
+    "project": "r2r",
+    "repository": "https://github.com/fuvty/R2R_Project_Page.git",
+    "sourceCommit": "f61e9c497870c57877f2584e7d513d5d9a456455",
+    "includesLocalEdits": true
+  },
+  {
+    "project": "framefusion",
+    "repository": "https://github.com/thu-nics/FrameFusion_Project_Page.git",
+    "sourceCommit": "ce5ee640b30fbfac0ad65537b8578d5fbbb1236e",
+    "includesLocalEdits": true
+  },
+  {
+    "project": "moa",
+    "repository": "https://github.com/thu-nics/MoA_project_page.git",
+    "sourceCommit": "0fc94bdc71b724c34b6804135baf454f2224b313",
+    "includesLocalEdits": true
+  },
+  {
+    "project": "hub",
+    "repository": "https://github.com/fuvty/scaling_proj_page.git",
+    "sourceCommit": "953473ebb368502cca9c6444f18c467270947d5e",
+    "includesLocalEdits": true
+  }
+]

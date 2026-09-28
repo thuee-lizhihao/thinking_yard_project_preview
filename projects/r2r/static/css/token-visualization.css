@@ -1,0 +1,159 @@
+/* Token Visualization Styles */
+.token-display-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.token-display-title {
+  margin-bottom: 0.25rem;
+  color: #363636;
+}
+
+.legend-instruction-wrapper {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.token-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: transparent;
+  border-radius: 6px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.legend-color-small {
+  background-color: #6c757d;
+}
+
+.legend-color-small-diff {
+  background-color: #3273dc;
+}
+
+.legend-color-large {
+  background-color: #dc3545;
+}
+
+.token-content {
+  line-height: 1.8;
+  padding: 0.0rem;
+  margin-bottom: 0rem;
+  background-color: transparent;
+  border-radius: 0;
+  font-size: 1.1rem;
+}
+
+.token {
+  position: relative;
+  display: inline;
+}
+
+.token-type-0 {
+  color: #6c757d; /* Gray for small model */
+}
+
+.token-type-1 {
+  color: #3273dc; /* Blue for small model with different response */
+}
+
+.token-type-2 {
+  color: #dc3545; /* Red for large model */
+}
+
+.token-hover {
+  cursor: pointer;
+}
+
+.token-popover {
+  position: absolute;
+  z-index: 100;
+  width: 320px;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid #dbdbdb;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  display: none;
+  font-size: 0.9rem;
+  color: #4a4a4a;
+}
+
+.token:hover .token-popover {
+  display: block;
+}
+
+.popover-section {
+  margin-bottom: 0.75rem;
+}
+
+.popover-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.popover-content {
+  margin-bottom: 0.5rem;
+}
+
+.popover-arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  border-top: 1px solid #dbdbdb;
+  border-left: 1px solid #dbdbdb;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.model-tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.small-model-tag {
+  background-color: #eef6fc;
+  color: #3273dc;
+}
+
+.large-model-tag {
+  background-color: #feecf0;
+  color: #dc3545;
+}
+
+.token-instruction {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}

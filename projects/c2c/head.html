@@ -1,0 +1,197 @@
+<meta name="keywords" content="C2C, LLM, Multi-LLM, KV-Cache, semantic communication, cache fusion">
+
+
+
+  <!-- Preload fonts -->
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <!-- MathJax -->
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- PapaParse for CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+  <script>
+    let performanceData = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load CSV data
+      Papa.parse('./static/data/performance_general.csv', {
+        download: true,
+        header: true,
+        complete: function(results) {
+          performanceData = results.data;
+          updatePerformanceTable();
+        }
+      });
+
+      // Scroll reveal animation
+      reveal();
+    });
+
+    // Scroll reveal function
+    function reveal() {
+      const reveals = document.querySelectorAll('.reveal');
+      reveals.forEach(element => {
+        const windowHeight = window.innerHeight;
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+
+        if (elementTop < windowHeight - elementVisible) {
+          element.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', reveal);
+
+    // Scroll to top function
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Toggle expandable sections
+    function toggleExpand(header) {
+      const section = header.parentElement;
+      section.classList.toggle('open');
+      const icon = header.querySelector('.expandable-icon i');
+      icon.className = section.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
+    }
+
+    function resetFilters() {
+      document.getElementById('receiverSelect').value = 'Qwen3-0.6B';
+      document.getElementById('sharerSelect').value = 'all';
+      updatePerformanceTable();
+    }
+
+    function updatePerformanceTable() {
+      const selectedReceiver = document.getElementById('receiverSelect').value;
+      const selectedSharer = document.getElementById('sharerSelect').value;
+      const tbody = document.getElementById('performanceTableBody');
+      tbody.innerHTML = '';
+
+      let filteredData = performanceData.filter(row => {
+        if (selectedReceiver !== 'all' && row.Receiver !== selectedReceiver) return false;
+        if (selectedSharer !== 'all' && row.Sharer !== selectedSharer) return false;
+        return true;
+      });
+
+      filteredData = filteredData.filter(row => row.Receiver && row.Sharer && row.Benchmark);
+
+      // Update count
+      document.getElementById('resultsCount').innerHTML = `
+        <i class="fas fa-chart-bar"></i> Showing <strong>${filteredData.length}</strong> results
+      `;
+
+      filteredData.forEach(row => {
+        const tr = document.createElement('tr');
+
+        const values = [
+          parseFloat(row.Receiver_Acc) || 0,
+          parseFloat(row.Sharer_Acc) || 0,
+          parseFloat(row.Routing_Acc) || 0,
+          parseFloat(row.T2T_Acc) || 0,
+          parseFloat(row.C2C_Acc) || 0
+        ];
+        const maxValue = Math.max(...values);
+
+        function formatCell(accValue, timeValue, isC2C = false) {
+          if (!accValue || accValue === 'N/A') {
+            return '<span style="color: #ccc;">N/A</span>';
+          }
+          const numValue = parseFloat(accValue);
+          const isBest = numValue === maxValue && maxValue > 0;
+          const displayAcc = isBest ? `<strong class="best">${accValue}%</strong>` : `${accValue}%`;
+          const displayTime = timeValue && timeValue !== 'N/A' ? `<div class="time-info">${timeValue}s</div>` : '';
+          return `<div>${displayAcc}</div>${displayTime}`;
+        }
+
+        tr.innerHTML = `
+          <td>${row.Receiver}</td>
+          <td>${row.Sharer}</td>
+          <td>${row.Benchmark}</td>
+          <td>${formatCell(row.Receiver_Acc, row.Receiver_Time)}</td>
+          <td>${formatCell(row.Sharer_Acc, row.Sharer_Time)}</td>
+          <td>${formatCell(row.Routing_Acc, row.Routing_Time)}</td>
+          <td>${formatCell(row.T2T_Acc, row.T2T_Time)}</td>
+          <td class="c2c-col">${formatCell(row.C2C_Acc, row.C2C_Time, true)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (filteredData.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="8" style="color: #999; padding: 40px;">No data available for this combination</td>`;
+        tbody.appendChild(tr);
+      }
+
+      updateSummary(filteredData);
+    }
+
+    function updateSummary(data) {
+      if (data.length === 0) {
+        document.getElementById('summaryImprovement').textContent = '—';
+        document.getElementById('summaryVsT2T').textContent = '—';
+        document.getElementById('summarySpeedup').textContent = '—';
+        return;
+      }
+
+      let totalC2CvsReceiver = 0;
+      let totalC2CvsT2T = 0;
+      let totalSpeedup = 0;
+      let countAccuracy = 0;
+      let countTime = 0;
+
+      data.forEach(row => {
+        const receiverAcc = parseFloat(row.Receiver_Acc);
+        const t2tAcc = parseFloat(row.T2T_Acc);
+        const c2cAcc = parseFloat(row.C2C_Acc);
+        const t2tTime = parseFloat(row.T2T_Time);
+        const c2cTime = parseFloat(row.C2C_Time);
+
+        if (!isNaN(receiverAcc) && !isNaN(c2cAcc)) {
+          totalC2CvsReceiver += (c2cAcc - receiverAcc);
+          countAccuracy++;
+        }
+
+        if (!isNaN(t2tAcc) && !isNaN(c2cAcc)) {
+          totalC2CvsT2T += (c2cAcc - t2tAcc);
+        }
+
+        if (!isNaN(t2tTime) && !isNaN(c2cTime) && t2tTime > 0 && c2cTime > 0) {
+          totalSpeedup += (t2tTime / c2cTime);
+          countTime++;
+        }
+      });
+
+      const avgImprovement = countAccuracy > 0 ? (totalC2CvsReceiver / countAccuracy).toFixed(1) : 0;
+      const avgVsT2T = countAccuracy > 0 ? (totalC2CvsT2T / countAccuracy).toFixed(1) : 0;
+      const avgSpeedup = countTime > 0 ? (totalSpeedup / countTime).toFixed(1) : 0;
+
+      document.getElementById('summaryImprovement').textContent = avgImprovement > 0 ? `+${avgImprovement}%` : `${avgImprovement}%`;
+      document.getElementById('summaryVsT2T').textContent = avgVsT2T > 0 ? `+${avgVsT2T}%` : `${avgVsT2T}%`;
+      document.getElementById('summarySpeedup').textContent = avgSpeedup > 0 ? `${avgSpeedup}×` : '—';
+    }
+
+    function copyBibtex() {
+      const code = document.getElementById('bibtexCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy BibTeX';
+        }, 2000);
+      });
+    }
+  </script>

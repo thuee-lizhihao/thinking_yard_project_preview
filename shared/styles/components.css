@@ -1,0 +1,79 @@
+/* Shared project primitives; project styles follow this file. */
+html {
+  scroll-behavior: smooth;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section.section-dark {
+  background: var(--apple-black);
+  color: #fff;
+}
+
+.section.section-gray {
+  background: var(--apple-light-gray);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.authors-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.author-tag:hover {
+  background: var(--apple-blue);
+  color: #fff;
+}
+
+.author-tag sup {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.copy-btn:hover {
+  background: var(--apple-blue);
+  color: #fff;
+}
+
+.expandable-section.open .expandable-header::before {
+  width: 4px;
+  opacity: 1;
+}
+
+.expandable-header:hover {
+  background: var(--apple-light-gray);
+}
+
+.expandable-section.open .expandable-title {
+  transform: translateX(8px);
+}
+
+.expandable-section.open .expandable-content {
+  grid-template-rows: 1fr;
+}
+
+.expandable-content-inner {
+  overflow: hidden;
+}
+
+.expandable-section.open .expandable-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.footer {
+  padding: 60px 0;
+  background: var(--apple-black);
+  color: #fff;
+}

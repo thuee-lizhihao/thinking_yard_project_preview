@@ -1,0 +1,755 @@
+<!-- Global Navigation -->
+
+
+<!-- Local Navigation -->
+
+
+<!-- Hero Section -->
+<section class="hero">
+  <canvas id="frameFusionHeroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <h1 class="hero-title"><span>FrameFusion</span></h1>
+    <p class="hero-subtitle">
+      Combining similarity and importance for video token reduction on large vision-language models.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-value">70%</div>
+        <div class="stat-label">Visual Tokens Reduced</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">1.6-3.6x</div>
+        <div class="stat-label">End-to-End Speedup</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">&lt;3%</div>
+        <div class="stat-label">Avg. Performance Impact</div>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <div class="hero-actions">
+        <a href="https://arxiv.org/pdf/2501.01986" class="btn btn-primary">
+          <i class="fas fa-file-pdf"></i> Read Paper
+        </a>
+        <a href="https://github.com/thu-nics/FrameFusion" class="btn btn-secondary">
+          <i class="fab fa-github"></i> View Code
+        </a>
+        <span class="hero-badge">
+          <i class="fas fa-award"></i> ICCV 2025
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-gray" id="overview">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Core Idea</p>
+      <h2 class="section-title">Keep visual tokens that are important and unique.</h2>
+      <p class="section-subtitle">
+        Importance answers which tokens matter. Similarity answers which of those tokens are redundant.
+        FrameFusion uses both signals instead of treating pruning as the only compression tool.
+      </p>
+    </div>
+
+    <div class="idea-flow reveal">
+      <div class="idea-card prune">
+        <div class="idea-icon"><i class="fas fa-minus"></i></div>
+        <p class="idea-label">Unimportant</p>
+        <h3>Prune</h3>
+        <p>Tokens with low cumulative attention are removed under the compute budget.</p>
+      </div>
+      <div class="idea-card merge">
+        <div class="idea-icon"><i class="fas fa-compress-arrows-alt"></i></div>
+        <p class="idea-label">Important + Similar</p>
+        <h3>Merge</h3>
+        <p>Redundant adjacent-frame tokens are averaged, preserving visual meaning while reducing length.</p>
+      </div>
+      <div class="idea-card keep">
+        <div class="idea-icon"><i class="fas fa-check"></i></div>
+        <p class="idea-label">Important + Unique</p>
+        <h3>Keep</h3>
+        <p>Distinct tokens survive to carry scene details, temporal events, and task-relevant evidence.</p>
+      </div>
+    </div>
+
+    <div class="method-panel reveal">
+      <img src="./static/images/method_detail.png" alt="FrameFusion method overview" class="method-figure">
+      <p class="figure-caption">
+        FrameFusion first merges tokens with similarities above a threshold at shallow layers, then applies top-k importance pruning to meet the target token budget.
+      </p>
+    </div>
+
+    <div class="stage-grid reveal">
+      <div class="stage-card">
+        <span class="stage-number">01</span>
+        <h3>Merging Stage</h3>
+        <p>
+          Corresponding visual tokens from adjacent frames are compared with cosine similarity. Highly similar tokens are grouped and averaged across successive shallow layers.
+        </p>
+      </div>
+      <div class="stage-card">
+        <span class="stage-number">02</span>
+        <h3>Pruning Stage</h3>
+        <p>
+          After redundant tokens are fused, FrameFusion uses cumulative attention scores to retain the most important remaining tokens within the compute budget.
+        </p>
+      </div>
+      <div class="stage-card">
+        <span class="stage-number">03</span>
+        <h3>Cascaded Reduction</h3>
+        <p>
+          Tokens are permanently reduced for later layers, so both attention and feed-forward computation become cheaper as inference proceeds.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section section-dark" id="observations">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Observations</p>
+      <h2 class="section-title">Why merging works for video tokens.</h2>
+    </div>
+
+    <div class="columns equal-height-columns reveal">
+      <!-- Observation 1 -->
+      <div class="column">
+        <div class="content observation-content">
+          <h3 class="title is-4">Observation 1:<br>Adjacent Similarity</h3>
+          <div class="observation-image-container">
+            <img src="./static/images/token_similarity.png" alt="Token similarity between frames">
+          </div>
+          <div class="observation-text">
+            <p>High similarity between adjacent frames</p>
+          </div>
+          <div class="observation-arrow">
+            <span class="icon has-text-info">
+              <i class="fas fa-arrow-down"></i>
+            </span>
+          </div>
+          <div class="observation-design">
+            <p><strong>Design Choice:</strong> O(N) adjacent-only computation</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observation 2 -->
+      <div class="column">
+        <div class="content observation-content">
+          <h3 class="title is-4">Observation 2:<br>Layer-wise Distribution</h3>
+          <div class="observation-image-container">
+            <img src="./static/images/similarity_distribution.png" alt="Token similarity distribution across layers">
+          </div>
+          <div class="observation-text">
+            <p>Token similarity distribution condenses as layers deepen</p>
+          </div>
+          <div class="observation-arrow">
+            <span class="icon has-text-info">
+              <i class="fas fa-arrow-down"></i>
+            </span>
+          </div>
+          <div class="observation-design">
+            <p><strong>Design Choice:</strong> Apply merging at shallow layers</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observation 3 -->
+      <div class="column">
+        <div class="content observation-content">
+          <h3 class="title is-4">Observation 3:<br>Ranking Consistency</h3>
+          <div class="observation-image-container">
+            <img src="./static/images/spearman_rank_correlation.png" alt="Similarity ranking consistency">
+          </div>
+          <div class="observation-text">
+            <p>High similarity ranking consistency across layers</p>
+          </div>
+          <div class="observation-arrow">
+            <span class="icon has-text-info">
+              <i class="fas fa-arrow-down"></i>
+            </span>
+          </div>
+          <div class="observation-design">
+            <p><strong>Design Choice:</strong> Cascaded merging strategy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section examples-section" id="examples">
+  <div class="container container-wide">
+    <div class="examples-body">
+      <div class="section-header section-header-centered reveal">
+        <p class="section-eyebrow">Interactive Examples</p>
+        <h2 class="section-title">Same answers with fewer visual tokens.</h2>
+        <p class="section-subtitle">
+          The original page interaction is preserved: compare dense inference with FrameFusion as the token counts and response timing change.
+        </p>
+      </div>
+      <div id="results-carousel" class="carousel results-carousel reveal">
+        <!-- Example 0: Tom and Jerry -->
+        <div class="item">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image">
+                <video autoplay loop muted playsinline class="carousel-video">
+                  <source src="./static/images/carousel/Tom_Jerry_compressed.mp4" type="video/mp4">
+                </video>
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <div class="qa-section">
+                  <p class="question"><strong>Q:</strong> Which animal hit the cat? Answer it simply.</p>
+                  <div class="answer-comparison">
+                    <div class="answer-box">
+                      <div class="answer-label">Original</div>
+                      <div class="answer-loading" id="original-loading-0">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 13,440 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="original-time-0">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="original-content-0">
+                        <div class="answer"><strong>A:</strong> Dog</div>
+                        <div class="token-count">13,440 tokens</div>
+                      </div>
+                    </div>
+                    <div class="answer-box">
+                      <div class="answer-label">FrameFusion</div>
+                      <div class="answer-loading" id="framefusion-loading-0">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 4,032 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="framefusion-time-0">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="framefusion-content-0">
+                        <div class="answer"><strong>A:</strong> Dog</div>
+                        <div class="token-count">4,032 tokens</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Example 1: Turing -->
+        <div class="item">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image">
+                <video autoplay loop muted playsinline class="carousel-video">
+                  <source src="./static/images/carousel/Turing_compressed.mp4" type="video/mp4">
+                </video>
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <div class="qa-section">
+                  <p class="question"><strong>Q:</strong> How many main characters are there in the video?</p>
+                  <div class="answer-comparison">
+                    <div class="answer-box">
+                      <div class="answer-label">Original</div>
+                      <div class="answer-loading" id="original-loading-1">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 10,290 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="original-time-1">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="original-content-1">
+                        <div class="answer"><strong>A:</strong> There are two main characters in the video.</div>
+                        <div class="token-count">10,290 tokens</div>
+                      </div>
+                    </div>
+                    <div class="answer-box">
+                      <div class="answer-label">FrameFusion</div>
+                      <div class="answer-loading" id="framefusion-loading-1">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 3,087 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="framefusion-time-1">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="framefusion-content-1">
+                        <div class="answer"><strong>A:</strong> There are two main characters in the video.</div>
+                        <div class="token-count">3,087 tokens</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Example 2: Monkey -->
+        <div class="item">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image">
+                <video autoplay loop muted playsinline class="carousel-video">
+                  <source src="./static/images/carousel/Monkey_compressed.mp4" type="video/mp4">
+                </video>
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <div class="qa-section">
+                  <p class="question"><strong>Q:</strong> What animal saves the monkey? Answer it simply.</p>
+                  <div class="answer-comparison">
+                    <div class="answer-box">
+                      <div class="answer-label">Original</div>
+                      <div class="answer-loading" id="original-loading-2">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 9,870 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="original-time-2">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="original-content-2">
+                        <div class="answer"><strong>A:</strong> A turtle.</div>
+                        <div class="token-count">9,870 tokens</div>
+                      </div>
+                    </div>
+                    <div class="answer-box">
+                      <div class="answer-label">FrameFusion</div>
+                      <div class="answer-loading" id="framefusion-loading-2">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processing 2,961 tokens...</div>
+                        <div class="loading-progress">
+                          <div class="loading-progress-bar"></div>
+                        </div>
+                        <div class="loading-time" id="framefusion-time-2">0.0s</div>
+                      </div>
+                      <div class="answer-content" id="framefusion-content-2">
+                        <div class="answer"><strong>A:</strong> A turtle.</div>
+                        <div class="token-count">2,961 tokens</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section section-gray" id="results">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Experiments</p>
+      <h2 class="section-title">Benchmark and runtime results.</h2>
+      <p class="section-subtitle">FrameFusion reduces video tokens aggressively while preserving benchmark accuracy and improving latency.</p>
+    </div>
+
+    <div class="results-summary reveal">
+      <div class="summary-title">FrameFusion Performance Summary</div>
+      <div class="summary-stats">
+        <div class="summary-stat">
+          <div class="summary-value">70%</div>
+          <div class="summary-label">Visual Tokens Reduced</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-value">1.6-3.6x</div>
+          <div class="summary-label">End-to-End Speedup</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-value">&lt;3%</div>
+          <div class="summary-label">Avg. Performance Impact</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo Video -->
+    <div class="expandable-section reveal">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">View Demo Video</span>
+        <div class="expandable-icon"><i class="fas fa-plus"></i></div>
+      </div>
+      <div class="expandable-content">
+        <div class="expandable-content-inner">
+          <div class="expandable-inner">
+            <div class="content">
+        <h3 class="title is-4">Demo Video</h3>
+        <p>Watch FrameFusion in action: See how our method efficiently processes video content while maintaining visual quality.</p>
+
+        <div class="columns is-centered">
+            <div class="column is-8">
+                <div class="video-container">
+                    <video controls class="demo-video">
+                        <source src="./static/videos/framefusion_demo.mov" type="video/quicktime">
+                        <source src="./static/videos/framefusion_demo.mov" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Performance Table -->
+    <div class="expandable-section reveal">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">View Detailed Benchmark Results</span>
+        <div class="expandable-icon"><i class="fas fa-plus"></i></div>
+      </div>
+      <div class="expandable-content">
+        <div class="expandable-content-inner">
+          <div class="expandable-inner">
+            <div class="content">
+        <div class="performance-section-header">
+          <h3 class="title is-4">Performance Comparison</h3>
+          <p>Performance comparison across models, methods, and benchmarks at 30% token budget</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="performance-controls">
+          <div class="filters-wrapper">
+            <div class="filter-item">
+              <label class="filter-label">Model Family</label>
+              <div class="custom-select">
+                <select id="modelFilter">
+                  <option value="">All Models</option>
+                  <option value="Llava-Video">Llava-Video</option>
+                  <option value="NVILA">NVILA</option>
+                  <option value="MiniCPM-V">MiniCPM-V</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-item">
+              <label class="filter-label">Model Size</label>
+              <div class="custom-select">
+                <select id="sizeFilter" disabled>
+                  <option value="">Select a model family first</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-item">
+              <button class="button is-primary" onclick="resetTable()">
+                <span class="icon">
+                  <i class="fas fa-undo"></i>
+                </span>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Table -->
+        <div class="modern-table-wrapper">
+          <div class="table-container">
+            <table id="performanceTable" class="modern-table">
+              <thead>
+                <tr>
+                  <th onclick="sortTable(0)" class="sortable sticky-col">
+                    Model <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="sortTable(1)" class="sortable sticky-col">
+                    Size <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="sortTable(2)" class="sortable sticky-col">
+                    Method <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="toggleBenchmark('videoniah')" class="benchmark-header" id="videoniah-header">
+                    VideoNIAH <i class="fas fa-chevron-right expand-icon"></i>
+                  </th>
+                  <th class="benchmark-sub videoniah-sub" onclick="sortTable(3)" style="display: none;">
+                    Edit <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th class="benchmark-sub videoniah-sub" onclick="sortTable(4)" style="display: none;">
+                    Insert1 <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th class="benchmark-sub videoniah-sub" onclick="sortTable(5)" style="display: none;">
+                    Insert2 <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="toggleBenchmark('nextqa')" class="benchmark-header" id="nextqa-header">
+                    NExT-QA <i class="fas fa-chevron-right expand-icon"></i>
+                  </th>
+                  <th class="benchmark-sub nextqa-sub" onclick="sortTable(6)" style="display: none;">
+                    MC <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th class="benchmark-sub nextqa-sub" onclick="sortTable(7)" style="display: none;">
+                    OE <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="toggleBenchmark('videomme')" class="benchmark-header" id="videomme-header">
+                    VideoMME <i class="fas fa-chevron-right expand-icon"></i>
+                  </th>
+                  <th class="benchmark-sub videomme-sub" onclick="sortTable(8)" style="display: none;">
+                    w/o sub. <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th class="benchmark-sub videomme-sub" onclick="sortTable(9)" style="display: none;">
+                    w/ sub. <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="sortTable(10)" class="sortable">
+                    EgoSchema <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="sortTable(11)" class="sortable">
+                    MVBench <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                  <th onclick="sortTable(12)" class="sortable average-col">
+                    Average <span class="sort-icon"><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="performanceTableBody">
+                <!-- Table content will be loaded dynamically from CSV -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Runtime Comparison -->
+    <div class="expandable-section reveal">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">View Runtime Breakdown</span>
+        <div class="expandable-icon"><i class="fas fa-plus"></i></div>
+      </div>
+      <div class="expandable-content">
+        <div class="expandable-content-inner">
+          <div class="expandable-inner">
+            <div class="content">
+        <h3 class="title is-4">Runtime Comparison</h3>
+        <p>FrameFusion runtime performance with different token budgets and frame counts. Select a model and cost level to see the comparison with the original model. </p>
+        <p><span class="framefusion">FrameFusion</span> achieves 1.6-3.6x end-to-end speedup, scaling better with larger models and more frames.</p>
+
+        <!-- Controls -->
+        <div class="runtime-controls">
+            <div class="filters-wrapper">
+                <div class="filter-item" style="flex: 1; min-width: 200px;">
+                    <label class="filter-label">Model</label>
+                    <div class="custom-select">
+                        <select id="runtimeModelSelect">
+                            <option value="Llava-Video-7B">Llava-Video-7B</option>
+                            <option value="Llava-Video-32B">Llava-Video-32B</option>
+                            <option value="Llava-Video-72B">Llava-Video-72B</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-item" style="flex: 1; min-width: 200px;">
+                    <label class="filter-label">Token Budget</label>
+                    <div class="custom-select">
+                        <select id="runtimeCostSelect">
+                            <option value="0.3">30% (0.3)</option>
+                            <option value="0.5">50% (0.5)</option>
+                            <option value="0.7">70% (0.7)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="runtime-chart-container">
+            <canvas id="runtimeChart" width="800" height="400"></canvas>
+        </div>
+
+        <!-- Speedup Summary -->
+        <div class="runtime-summary">
+            <div class="notification is-info is-light">
+            <div class="content">
+                <h4 class="title is-5">Speedup Summary</h4>
+                <div id="speedupSummary">
+                <p>Select a model and cost level to see speedup statistics.</p>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance vs Budget
+    <div class="content">
+      <h3 class="title is-4">Performance vs. Token Budget</h3>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Token Budget</th>
+            <th>VideoMME</th>
+            <th>NExt-QA-MC</th>
+            <th>NExt-QA-OE</th>
+            <th>Max Drop</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>30%</td>
+            <td>61.3 (-3.0%)</td>
+            <td>81.8 (-1.7%)</td>
+            <td>31.7 (-1.2%)</td>
+            <td>3.0%</td>
+          </tr>
+          <tr>
+            <td>50%</td>
+            <td>62.6 (-0.9%)</td>
+            <td>82.7 (-0.6%)</td>
+            <td>32.1 (0.0%)</td>
+            <td>0.9%</td>
+          </tr>
+          <tr>
+            <td>70%</td>
+            <td>63.0 (-0.3%)</td>
+            <td>82.8 (-0.5%)</td>
+            <td>32.1 (0.0%)</td>
+            <td>0.5%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div> -->
+  </div>
+</section>
+
+
+<section class="section" id="demo">
+  <div class="container">
+    <div class="section-header section-header-centered reveal">
+      <p class="section-eyebrow">Interactive Demo</p>
+      <h2 class="section-title">Original frames versus reduced frames.</h2>
+    </div>
+
+    <div class="content has-text-centered reveal">
+      <p>
+        Compare the original video frames with FrameFusion-processed frames. Use the slider to see how our method maintains visual quality while reducing tokens.
+      </p>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column is-10">
+        <div class="columns is-vcentered interpolation-panel reveal">
+          <div class="column is-3 has-text-centered">
+            <img src="./static/images/tom_jerry/frame_60.png"
+                 class="interpolation-image"
+                 alt="Original frame"/>
+            <p>Original Frame<br/>(256 tokens)</p>
+          </div>
+          <div class="column interpolation-video-column">
+            <div id="interpolation-image-wrapper">
+              Loading...
+            </div>
+            <input class="slider is-fullwidth is-large is-info"
+                   id="interpolation-slider"
+                   step="1" min="0" max="100" value="0" type="range">
+          </div>
+          <div class="column is-3 has-text-centered">
+            <img src="./static/images/tom_jerry_prune/frame_60.png"
+                 class="interpolation-image"
+                 alt="Pruned frame"/>
+            <p>After FrameFusion<br/>(77 tokens)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content has-text-centered reveal">
+      <p>
+        Token reduction maintains semantic understanding while significantly reducing computation.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<section class="section section-gray authors-section">
+  <div class="container">
+    <div class="section-header section-header-centered reveal">
+      <p class="section-eyebrow">Team</p>
+      <h2 class="section-title">Meet the researchers.</h2>
+    </div>
+    <div class="authors-list reveal">
+      <a href="https://nicsefc.ee.tsinghua.edu.cn/people/TianyuFu" class="author-tag">Tianyu Fu<sup>1,2*</sup></a>
+      <span class="author-tag">Tengxuan Liu<sup>1,2*</sup></span>
+      <span class="author-tag">Qinghao Han<sup>3*</sup></span>
+      <a href="https://dai.sjtu.edu.cn/pepledetail.html?id=218" class="author-tag">Guohao Dai<sup>4,2</sup></a>
+      <span class="author-tag">Shengen Yan<sup>2</sup></span>
+      <span class="author-tag">Huazhong Yang<sup>1</sup></span>
+      <span class="author-tag">Xuefei Ning<sup>1</sup></span>
+      <a href="https://nicsefc.ee.tsinghua.edu.cn/people/YuWang" class="author-tag">Yu Wang<sup>1</sup></a>
+    </div>
+    <p class="affiliations reveal">
+      <sup>1</sup>Tsinghua University &nbsp;&nbsp; <sup>2</sup>Infinigence-AI &nbsp;&nbsp; <sup>3</sup>Peking University &nbsp;&nbsp; <sup>4</sup>Shanghai Jiao Tong University
+      <br>
+      <sup>*</sup>Equal contribution
+    </p>
+  </div>
+</section>
+
+
+<section class="section" id="bibtex">
+  <div class="container content">
+    <div class="section-header reveal">
+      <p class="section-eyebrow">Citation</p>
+      <h2 class="section-title">Cite our work.</h2>
+    </div>
+    <div class="bibtex-container reveal">
+      <button class="copy-btn" onclick="copyBibtex()">
+        <i class="fas fa-copy"></i> Copy BibTeX
+      </button>
+      <pre><code id="bibtexCode">@article{fu2025framefusion,
+  title     = {FrameFusion: Combining Similarity and Importance for Video Token Reduction on Large Vision Language Models},
+  author    = {Fu, Tianyu and Liu, Tengxuan and Han, Qinghao and Dai, Guohao and Yan, Shengen and Yang, Huazhong and Ning, Xuefei and Wang, Yu},
+  journal   = {arXiv preprint arXiv:2501.01986},
+  year      = {2025}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-social">
+      <a class="icon-link" href="https://arxiv.org/pdf/2501.01986">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link external-link" href="https://github.com/thu-nics/FrameFusion">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="footer-content">
+      <p>FrameFusion: Combining Similarity and Importance for Video Token Reduction on Large Vision Language Models.</p>
+      <p>
+        Licensed under <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Website template originally borrowed from <a href="https://nerfies.github.io">Nerfies</a>.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTop" onclick="scrollToTop()" aria-label="Scroll to top">
+  <i class="fas fa-arrow-up"></i>
+</button>

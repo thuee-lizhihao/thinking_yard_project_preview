@@ -1,0 +1,1553 @@
+<!-- Global Navigation (Related Projects) -->
+
+
+<!-- Local Navigation (R2R-specific) -->
+
+
+<!-- Hero Section -->
+<section class="hero">
+  <!-- Route-field canvas: reasoning paths that fork, return (neutral) or peel off (divergent) -->
+  <canvas id="routeCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0;" aria-hidden="true"></canvas>
+
+  <!-- Center fade: radial gradient that clears the middle for text readability -->
+  <div style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;
+    background: radial-gradient(ellipse 62% 66% at 50% 48%, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 38%, rgba(255,255,255,0.42) 68%, rgba(255,255,255,0) 100%);
+    pointer-events:none;" aria-hidden="true"></div>
+
+  <!-- Content overlay -->
+  <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; width:100%;">
+  <h1 class="hero-title">
+    <span>Roads to Rome</span>
+  </h1>
+  <p class="hero-subtitle">Efficiently Navigating Divergent Reasoning Paths with Small-Large Model Token Routing. Let small models follow large models' reasoning paths by correcting only the divergent tokens.
+  </p>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-value">2.8×</div>
+      <div class="stat-label">Speedup vs R1-32B</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">5.6B</div>
+      <div class="stat-label">Avg. Activated Params</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">1.6×</div>
+      <div class="stat-label">Accuracy vs R1-7B</div>
+    </div>
+  </div>
+
+  <div class="hero-cta">
+    <div class="hero-actions">
+      <a href="https://arxiv.org/pdf/2505.21600" class="btn btn-primary">
+        <i class="fas fa-file-alt"></i> Read Paper
+      </a>
+      <a href="https://github.com/thu-nics/R2R" class="btn btn-secondary">
+        <i class="fab fa-github"></i> View Code
+      </a>
+      <a href="https://huggingface.co/nics-efc/R2R_router_collections" class="btn btn-secondary">
+        🤗 Models
+      </a>
+      <span class="hero-badge">
+        <i class="fas fa-award"></i>
+        NeurIPS 2025
+      </span>
+    </div>
+  </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  const canvas = document.getElementById('routeCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Geometry ──────────────────────────────────────────────────────────
+  // Treadmill composition: each road has a fixed "pen" (the next-token
+  // frontier) while the drawn road slides away leftward beneath it.
+  // Roads form a living population: divergent forks birth a new road that
+  // continues forever, neutral forks split and merge back, and when the
+  // population exceeds the cap one road retires (fades out and scrolls off).
+  const STEP = 32;            // px between token nodes along a road
+  const NODE_R = 1.8;         // token node radius
+  const BIRTH_LEN = 5 * STEP; // px over which a newborn lane separates from its parent
+  const RED_LEN = 5 * STEP;   // px of divergence tint at a newborn road's junction
+  const MAX_ROADS = 9;        // population cap: beyond this, a road retires
+  const DEATH_FADE = 1.8;     // s for a retiring road to fade out
+  let roads = [];
+  let W = 0, H = 0;
+  let mouseX = -1000, mouseY = -1000;
+  let time = 0;
+
+  // Initial road bands as fractions of hero height. The middle band is
+  // populated too — the center vignette keeps the title legible while the
+  // roads stay visible at the flanks.
+  // penX: frontier position as fraction of width (staggered, outside vignette).
+  // Middle-band roads run under the text, so their pens extend further
+  // right — the frontier and its fork events stay clear of the copy.
+  const ROAD_DEFS = [
+    { yFrac: 0.14, penXFrac: 0.78, speed: 26 },
+    { yFrac: 0.26, penXFrac: 0.62, speed: 32 },
+    { yFrac: 0.42, penXFrac: 0.93, speed: 28 },
+    { yFrac: 0.58, penXFrac: 0.90, speed: 24 },
+    { yFrac: 0.74, penXFrac: 0.70, speed: 22 },
+    { yFrac: 0.85, penXFrac: 0.82, speed: 30 },
+    { yFrac: 0.94, penXFrac: 0.58, speed: 25 },
+  ];
+
+  // Undulation: two summed sines, per-lane phase
+  function laneY(baseY, phase, worldX) {
+    return baseY
+      + Math.sin(worldX * 0.006 + phase) * 12
+      + Math.sin(worldX * 0.0023 + phase * 1.7) * 18;
+  }
+
+  // A newborn road blends from its parent's lane into its own over BIRTH_LEN,
+  // so the split reads as one trace becoming two. Parent lane params are
+  // copied at birth, so the junction stays stable even if the parent retires.
+  function roadY(road, worldX) {
+    const own = laneY(road.baseY, road.phase, worldX);
+    const b = road.birth;
+    if (!b) return own;
+    const t = (worldX - b.worldX) / BIRTH_LEN;
+    if (t >= 1) return own;
+    const par = laneY(b.parentBaseY, b.parentPhase, worldX);
+    if (t <= 0) return par;
+    const s = t * t * (3 - 2 * t);
+    return par + (own - par) * s;
+  }
+
+  function makeRoad(baseY, penX, speed) {
+    return {
+      baseY, penX, speed,
+      penTarget: penX,
+      phase: Math.random() * Math.PI * 2,
+      scroll: Math.random() * 1000,
+      fork: null,      // active fork event on this road
+      loops: [],       // completed neutral splits, kept as permanent geometry
+      birth: null,     // set for roads born from a divergent fork
+      born: 0,
+      dying: false,
+      alphaMul: 1,
+    };
+  }
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    W = rect.width;
+    H = rect.height;
+
+    roads = ROAD_DEFS.map((def, i) => {
+      const road = makeRoad(def.yFrac * H, def.penXFrac * W, def.speed);
+      road.phase = i * 2.39996;   // golden-angle stagger
+      return road;
+    });
+  }
+
+  // ── Fork events ───────────────────────────────────────────────────────
+  // Neutral: the trace splits in two and shortly merges back into one.
+  // Divergent: the trace splits in two forever — a new road is born at the
+  // pen and the junction pulses with the LLM-correction gradient.
+  const FORK_INTERVAL = 2.2;      // s between fork spawns
+  const FORK_RESOLVE = 1.6;       // s at which a divergent correction completes
+  const FORK_TOTAL = 2.8;         // s full lifetime of a divergent fork event
+  const MERGE_LEN = 4 * STEP;     // px a neutral branch travels before rejoining
+  const MERGE_SETTLE = 0.9;       // s for a merged branch to relax to road alpha
+  let forkTimer = FORK_INTERVAL * 0.5;
+  // Weighted 5:6 neutral:divergent per the paper's label distribution
+  const forkTypeBag = ['n','d','n','d','d','n','d','n','n','d','d'];
+  let forkBagIdx = 0;
+
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  // Free vertical space around a road, looking at the whole field: distance
+  // to the nearest other lane (or hero edge) above and below.
+  function freeSpace(road) {
+    let up = road.baseY - H * 0.04;
+    let down = H * 0.98 - road.baseY;
+    for (const other of roads) {
+      if (other === road) continue;
+      const d = other.baseY - road.baseY;
+      if (d < 0) up = Math.min(up, -d);
+      else if (d > 0) down = Math.min(down, d);
+    }
+    return { up, down };
+  }
+
+  function spawnChild(parent, dir) {
+    const worldX = parent.scroll + parent.penX;
+    // Place the new lane in the freest gap on the chosen side, keeping a
+    // healthy margin from existing lanes so traces don't pile up
+    const space = freeSpace(parent);
+    const room = dir < 0 ? space.up : space.down;
+    const off = clamp(room * 0.55, 48, 110);
+    const baseY = clamp(parent.baseY + dir * off, H * 0.05, H * 0.97);
+    const child = makeRoad(baseY, parent.penX, parent.speed);
+    child.scroll = parent.scroll;   // world coords align so the junction is seamless
+    // Inherit the parent's undulation phase (barely perturbed): the two
+    // traces stay parallel after the split instead of criss-crossing
+    child.phase = parent.phase + (Math.random() - 0.5) * 0.4;
+    // Mid-band pens stay far right, clear of the hero copy
+    const midBand = baseY > H * 0.30 && baseY < H * 0.70;
+    child.penTarget = midBand
+      ? clamp(parent.penX + (Math.random() - 0.5) * 0.24 * W, W * 0.86, W * 0.94)
+      : clamp(parent.penX + (Math.random() - 0.5) * 0.24 * W, W * 0.5, W * 0.86);
+    child.birth = { worldX: worldX, parentBaseY: parent.baseY, parentPhase: parent.phase };
+    child.born = time;
+    roads.push(child);
+  }
+
+  function spawnFork() {
+    const candidates = roads.filter(r => !r.fork && !r.dying);
+    if (candidates.length === 0) return;
+    const road = candidates[Math.floor(Math.random() * candidates.length)];
+    const type = forkTypeBag[forkBagIdx % forkTypeBag.length];
+    forkBagIdx++;
+    // Branch toward the side with more free space, so bulges and new lanes
+    // don't collide with neighboring traces
+    const space = freeSpace(road);
+    const dir = space.up > space.down ? -1 : 1;
+    road.fork = {
+      type: type,                          // 'n' neutral | 'd' divergent
+      age: 0,
+      dir: dir,                            // branch up or down
+      mergedAt: null,                      // time the neutral branch rejoined
+      // world-x of the fork point, so it scrolls away with the road
+      worldX: road.scroll + road.penX,
+    };
+    if (type === 'd') spawnChild(road, dir);  // one trace becomes two, forever
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────
+  // Divergence tint: the junction stretch of a newborn road reads red,
+  // relaxing to neutral ink as the road establishes itself.
+  function segColor(road, wx, alpha) {
+    const b = road.birth;
+    if (b) {
+      const u = (wx - b.worldX) / RED_LEN;
+      if (u < 1) {
+        const mix = 1 - Math.max(0, u);   // 1 at the junction → 0 downstream
+        const r = Math.round(29 + (239 - 29) * mix);
+        const g = Math.round(29 + (68 - 29) * mix);
+        const bl = Math.round(31 + (68 - 31) * mix);
+        return `rgba(${r},${g},${bl},${alpha + 0.06 * mix})`;
+      }
+    }
+    return `rgba(29,29,31,${alpha})`;
+  }
+
+  function drawRoad(road) {
+    const b = road.birth;
+    // Newborn roads only exist from their junction onward
+    const startX = b ? Math.max(-STEP, b.worldX - road.scroll) : -STEP;
+    const endX = road.penX;
+
+    // Lens: brighten roads near the cursor
+    let lensBoost = 0;
+    if (mouseX > -999) {
+      const dy = Math.abs(roadY(road, road.scroll + road.penX * 0.5) - mouseY);
+      // crude distance from cursor to road band
+      const d = Math.max(0, dy - 20);
+      lensBoost = Math.max(0, 1 - d / 140) * 0.10;
+    }
+
+    const baseAlpha = (0.10 + lensBoost) * road.alphaMul;
+
+    // Polyline in short segments so color can vary along the road
+    ctx.lineWidth = 1;
+    for (let x = startX; x < endX; x += 8) {
+      const x1 = Math.min(x + 8, endX);
+      const y0 = roadY(road, road.scroll + x);
+      const y1 = roadY(road, road.scroll + x1);
+      ctx.beginPath();
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x1, y1);
+      ctx.strokeStyle = segColor(road, road.scroll + x, baseAlpha);
+      ctx.stroke();
+    }
+
+    // Token nodes, aligned to world grid so they scroll with the road
+    const firstWorld = Math.ceil((road.scroll + startX) / STEP) * STEP;
+    for (let wx = firstWorld; wx <= road.scroll + endX; wx += STEP) {
+      const x = wx - road.scroll;
+      const y = roadY(road, wx);
+      // node-level lens boost
+      let nodeAlpha = 0.14 + lensBoost;
+      if (mouseX > -999) {
+        const dx = x - mouseX, dyy = y - mouseY;
+        const dist = Math.sqrt(dx * dx + dyy * dyy);
+        if (dist < 140) nodeAlpha += Math.pow(1 - dist / 140, 0.7) * 0.25;
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, NODE_R, 0, Math.PI * 2);
+      ctx.fillStyle = segColor(road, wx, nodeAlpha * road.alphaMul);
+      ctx.fill();
+    }
+
+    // Pen (frontier) node: slightly larger, always visible
+    const penY = roadY(road, road.scroll + road.penX);
+    ctx.beginPath();
+    ctx.arc(road.penX, penY, NODE_R + 1.2, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(29,29,31,${0.28 * road.alphaMul})`;
+    ctx.fill();
+
+    // Permanent merged loops: kept forever, settling from the active
+    // branch brightness down to the road's resting alpha
+    for (const loop of road.loops) {
+      const settle = Math.min(1, (time - loop.mergedAt) / MERGE_SETTLE);
+      const alpha = (0.36 + (0.14 - 0.36) * settle) * road.alphaMul;
+      drawBranch(road, loop, MERGE_LEN, alpha);
+
+      // Merge blink: soft blue at the rejoin node, right as the pen arrives
+      if (settle < 1) {
+        const p = branchPoint(road, loop, MERGE_LEN);
+        const blink = Math.sin(settle * Math.PI);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3 + blink * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(10,132,255,${0.5 * blink * road.alphaMul})`;
+        ctx.fill();
+      }
+    }
+
+    if (road.fork) drawFork(road);
+  }
+
+  function branchPoint(road, split, s) {
+    // s: arc-length parameter (px) along a neutral branch from its fork
+    // point: it bulges out, then eases back and merges. `split` is either
+    // an active fork or a permanent merged loop ({worldX, dir}).
+    const fx = split.worldX - road.scroll;   // fork x in screen space (scrolls left)
+    const x = fx + s;
+    const baseY = roadY(road, split.worldX + s);
+    const t = Math.min(1, s / MERGE_LEN);
+    const offset = Math.sin(t * Math.PI) * 30;   // out and back
+    return { x: x, y: baseY + offset * split.dir };
+  }
+
+  function drawBranch(road, split, growLen, alpha) {
+    // Fine sampling with an exact endpoint: the bulge has much higher
+    // curvature than the road, so 4px steps keep it as smooth as the main
+    // line, and pinning the tip stops it advancing in visible jumps.
+    ctx.beginPath();
+    for (let s = 0; ; s += 4) {
+      const cs = Math.min(s, growLen);
+      const p = branchPoint(road, split, cs);
+      if (s === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      if (cs >= growLen) break;
+    }
+    ctx.strokeStyle = `rgba(29,29,31,${alpha})`;
+    ctx.lineWidth = 1.2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Token nodes along the branch, on the same world grid as the road,
+    // so the alternative reads as a real path rather than a thin line
+    const firstS = Math.ceil(split.worldX / STEP) * STEP - split.worldX;
+    for (let s = Math.max(firstS, STEP * 0.5); s <= growLen; s += STEP) {
+      const p = branchPoint(road, split, s);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, NODE_R, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(29,29,31,${alpha + 0.06})`;
+      ctx.fill();
+    }
+  }
+
+  function drawFork(road) {
+    const fork = road.fork;
+    const fx = fork.worldX - road.scroll;
+    const fy = roadY(road, fork.worldX);
+
+    // Divergent-only timings
+    const resolveT = Math.min(1, fork.age / FORK_RESOLVE);
+    const endFade = Math.min(1, Math.max(0, (FORK_TOTAL - fork.age) / (FORK_TOTAL - FORK_RESOLVE)));
+
+    if (fork.type === 'n') {
+      // ── Neutral: the trace visibly splits in two, then merges back ──
+      // Both alternatives are written by the pen at the same pace: the
+      // branch only extends as far as the pen has advanced past the fork,
+      // so main path and branch reach the merge point together. Once merged,
+      // step() converts the branch into permanent road geometry (loops).
+      const penWorld = road.scroll + road.penX;
+      const growLen = Math.min(penWorld - fork.worldX, MERGE_LEN);
+      if (growLen <= 0) return;
+      drawBranch(road, fork, growLen, 0.36 * road.alphaMul);
+    } else {
+      // ── Divergent: the newborn road (drawn as its own trace) carries the
+      // split; here we only fire the correction pulse at the junction —
+      // the one gradient moment — plus a brief bright on-path segment.
+      const pulse = Math.sin(Math.min(fork.age / FORK_RESOLVE, 1) * Math.PI);
+      if (pulse > 0.01) {
+        const r = 6 + pulse * 14;
+        const grad = ctx.createRadialGradient(fx, fy, 0, fx, fy, r);
+        grad.addColorStop(0, `rgba(118,75,162,${0.50 * pulse * road.alphaMul})`);
+        grad.addColorStop(0.6, `rgba(102,126,234,${0.28 * pulse * road.alphaMul})`);
+        grad.addColorStop(1, 'rgba(102,126,234,0)');
+        ctx.beginPath();
+        ctx.arc(fx, fy, r, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      // Corrected segments: brief bright gradient stroke continuing on-path
+      const brightLen = 3 * STEP * Math.min(1, fork.age / FORK_RESOLVE);
+      if (brightLen > 4 && endFade > 0.01) {
+        const gx0 = fx, gx1 = fx + brightLen;
+        const lg = ctx.createLinearGradient(gx0, fy, gx1, fy);
+        lg.addColorStop(0, `rgba(102,126,234,${0.45 * endFade * road.alphaMul})`);
+        lg.addColorStop(1, 'rgba(102,126,234,0)');
+        ctx.beginPath();
+        for (let x = gx0; x <= gx1; x += 8) {
+          const y = roadY(road, road.scroll + x);
+          if (x === gx0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = lg;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function step(dt) {
+    time += dt;
+    for (const road of roads) {
+      road.scroll += road.speed * dt;
+      road.penX += (road.penTarget - road.penX) * Math.min(1, dt * 0.5);
+      if (road.dying) road.alphaMul = Math.max(0, road.alphaMul - dt / DEATH_FADE);
+      if (road.fork) {
+        const fork = road.fork;
+        fork.age += dt;
+        if (fork.type === 'n') {
+          // When the pen reaches the merge point, the branch becomes
+          // permanent road geometry and scrolls away with the trace
+          if (road.scroll + road.penX - fork.worldX >= MERGE_LEN) {
+            road.loops.push({ worldX: fork.worldX, dir: fork.dir, mergedAt: time });
+            road.fork = null;
+          }
+        } else if (fork.age > FORK_TOTAL) {
+          road.fork = null;
+        }
+      }
+      // Drop loops that have fully scrolled off the left edge
+      if (road.loops.length && road.loops[0].worldX + MERGE_LEN < road.scroll - STEP) {
+        road.loops.shift();
+      }
+    }
+
+    // Remove fully faded roads
+    roads = roads.filter(r => r.alphaMul > 0);
+
+    // Population control: too many traces → the most crowded lane retires,
+    // which relaxes the whole field instead of opening a random gap
+    if (roads.length > MAX_ROADS && !roads.some(r => r.dying)) {
+      const candidates = roads.filter(r => !r.fork && time - r.born > 4);
+      if (candidates.length > 0) {
+        let worst = candidates[0], worstRoom = Infinity;
+        for (const r of candidates) {
+          const s = freeSpace(r);
+          const room = Math.min(s.up, s.down);
+          if (room < worstRoom) { worstRoom = room; worst = r; }
+        }
+        worst.dying = true;
+      }
+    }
+
+    forkTimer -= dt;
+    if (forkTimer <= 0) {
+      spawnFork();
+      forkTimer = FORK_INTERVAL;
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const road of roads) drawRoad(road);
+  }
+
+  // ── Loop, paused when hero is off-screen ─────────────────────────────
+  let running = true;
+  let lastT = performance.now();
+  function loop(now) {
+    if (!running) return;
+    const dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+    step(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  canvas.parentElement.addEventListener('mousemove', (e) => {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  });
+  canvas.parentElement.addEventListener('mouseleave', () => {
+    mouseX = -1000;
+    mouseY = -1000;
+  });
+
+  function drawStaticFrame() {
+    // Static frame: a moment with one frozen neutral split mid-flight,
+    // its fork point placed so the branch is half-drawn at the pen
+    const r = roads[1];
+    r.fork = { type: 'n', age: 1, dir: -1, mergedAt: null, worldX: r.scroll + r.penX - MERGE_LEN * 0.6 };
+    draw();
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    if (reducedMotion) drawStaticFrame();
+  });
+  resize();
+
+  if (reducedMotion) {
+    drawStaticFrame();
+    return;
+  }
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries[0].isIntersecting;
+      if (visible && !running) {
+        running = true;
+        lastT = performance.now();
+        requestAnimationFrame(loop);
+      } else if (!visible) {
+        running = false;
+      }
+    }, { threshold: 0.01 });
+    io.observe(canvas.parentElement);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<!-- The Challenge Section -->
+<section class="section section-gray" id="problem">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">The Challenge</p>
+      <h2 class="section-title">LLMs are powerful but expensive.</h2>
+      <p class="section-subtitle">
+        Small models are fast but make mistakes. What if we could get the best of both worlds?
+      </p>
+    </div>
+
+    <div class="problem-diagram reveal">
+      <div class="problem-box">
+        <div class="problem-box-icon">🚀</div>
+        <h4>Small Models (1.5B)</h4>
+        <p>Fast generation<br>Limited accuracy</p>
+      </div>
+      <div class="arrow-icon">←</div>
+      <div class="problem-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">
+        <div class="problem-box-icon">⚡</div>
+        <h4>R2R Routing</h4>
+        <p style="color: #fff;">Best of both worlds<br>Smart token routing</p>
+      </div>
+      <div class="arrow-icon">→</div>
+      <div class="problem-box">
+        <div class="problem-box-icon">🧠</div>
+        <h4>Large Models (32B)</h4>
+        <p>Accurate reasoning<br>Slow & expensive</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Key Insight Section -->
+<section class="section section-dark" id="insight">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow" style="color: #0a84ff;">The Discovery</p>
+      <h2 class="section-title">Not all tokens are equal.</h2>
+      <p class="section-subtitle">
+        We discovered that only a small fraction of tokens actually diverge reasoning paths between large and small models.
+      </p>
+    </div>
+
+    <div class="insight-grid reveal">
+      <div class="insight-card">
+        <div class="insight-percentage green">89%</div>
+        <div class="insight-label">Identical Tokens</div>
+        <div class="insight-desc">
+          The vast majority of tokens are predicted identically by both models. No routing needed.
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-percentage blue">6%</div>
+        <div class="insight-label">Neutral Differences</div>
+        <div class="insight-desc">
+          Minor variations like "let's" vs "let us" that don't affect reasoning outcomes.
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-percentage orange">5%</div>
+        <div class="insight-label">Divergent Tokens</div>
+        <div class="insight-desc">
+          Critical tokens that change the reasoning path. These are the only ones we route to the LLM.
+        </div>
+      </div>
+    </div>
+
+    <!-- Learn More Expandable -->
+    <div class="reveal" style="margin-top: 48px;">
+      <div class="expandable-section" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title" style="color: #fff;">Learn more about token classification</span>
+          <div class="expandable-icon" style="background: rgba(255,255,255,0.1);">
+            <i class="fas fa-plus" style="color: #fff; font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner" style="color: rgba(255,255,255,0.8);">
+              <p style="margin-bottom: 16px;">
+                <strong style="color: #30d158;">Identical tokens</strong> occur when both the small and large language model predict the exact same next token given the same context. Since they agree, we can safely use the faster small model.
+              </p>
+              <p style="margin-bottom: 16px;">
+                <strong style="color: #0a84ff;">Neutral differences</strong> are cases where models predict different tokens, but these differences don't affect the reasoning outcome—like abbreviations or stylistic choices.
+              </p>
+              <p>
+                <strong style="color: #ff9f0a;">Divergent tokens</strong> genuinely alter the meaning, logic, or conclusion of the current sentence, thus diverging the subsequent reasoning path. These are the critical tokens where we need the large model's guidance.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Workflow Section -->
+<section class="section" id="demo">
+  <div class="container-wide">
+    <div class="reveal">
+      <p class="section-eyebrow">Interactive Demo</p>
+      <h2 class="section-title">Watch R2R in action.</h2>
+      <p class="section-subtitle">
+        See how R2R intelligently routes tokens between models in real-time.
+      </p>
+    </div>
+
+    <div class="workflow-container reveal">
+      <div class="workflow-header">
+        <div class="workflow-title">R2R Inference Workflow</div>
+        <div class="workflow-controls">
+          <button class="workflow-btn" id="playBtn" onclick="startWorkflow()">
+            <i class="fas fa-play"></i>
+          </button>
+          <button class="workflow-btn" id="pauseBtn" onclick="pauseWorkflow()" disabled>
+            <i class="fas fa-pause"></i>
+          </button>
+          <button class="workflow-btn" id="resetBtn" onclick="resetWorkflow()">
+            <i class="fas fa-redo"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="workflow-stages">
+        <div class="workflow-stage active" data-stage="0">
+          <div class="workflow-stage-number">Step 1</div>
+          <div class="workflow-stage-name">Input Query</div>
+        </div>
+        <div class="workflow-stage" data-stage="1">
+          <div class="workflow-stage-number">Step 2</div>
+          <div class="workflow-stage-name">SLM Predicts</div>
+        </div>
+        <div class="workflow-stage" data-stage="2">
+          <div class="workflow-stage-number">Step 3</div>
+          <div class="workflow-stage-name">Router Checks</div>
+        </div>
+        <div class="workflow-stage" data-stage="3">
+          <div class="workflow-stage-number">Step 4</div>
+          <div class="workflow-stage-name">Route Decision</div>
+        </div>
+        <div class="workflow-stage" data-stage="4">
+          <div class="workflow-stage-number">Step 5</div>
+          <div class="workflow-stage-name">Output Token</div>
+        </div>
+      </div>
+
+      <div class="workflow-visualization" id="workflowViz">
+        <div class="workflow-step-content active" data-step="0">
+          <div style="text-align: center; padding: 40px 0;">
+            <div style="font-size: 18px; font-weight: 500; margin-bottom: 16px;">AIME 2024 Problem I-1</div>
+            <div style="background: #fff; padding: 24px; border-radius: 12px; max-width: 700px; margin: 0 auto; font-size: 15px; line-height: 1.6; text-align: left;">
+              Every morning Aya goes for a 9-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of <em>s</em> kilometers per hour, the entire walk takes exactly 4 hours, including <em>t</em> minutes spent at the coffee shop. When she walks at a constant speed of <em>s + 2</em> kilometers per hour, the entire walk takes exactly 2 hours and 24 minutes, including <em>t</em> minutes spent at the coffee shop. Suppose Aya walks at <em>s + ½</em> kilometers per hour. Find the number of minutes the entire walk takes, including the <em>t</em> minutes spent at the coffee shop.
+            </div>
+            <div style="margin-top: 24px; color: var(--apple-gray); font-size: 14px;">
+              <i class="fas fa-play-circle" style="margin-right: 6px;"></i>
+              Click the play button above to see R2R process this problem
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step-content" data-step="1">
+          <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Small Model (R1-1.5B) generates tokens...</div>
+            <div class="token-stream" id="tokenStream" style="justify-content: center;">
+              <!-- Tokens will be inserted here by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step-content" data-step="2">
+          <div style="text-align: center; padding: 40px 0;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+            <div style="font-size: 18px; font-weight: 500; margin-bottom: 12px;">Neural Router Analyzing Token</div>
+            <div style="font-size: 14px; color: var(--apple-gray); max-width: 500px; margin: 0 auto; line-height: 1.6;">
+              The 56M-parameter neural router examines three features from the SLM: <strong>top-100 logits</strong> (prediction uncertainty), <strong>token embeddings</strong> (frequency bias), and <strong>hidden states</strong> (semantic context) to predict if this token would diverge the reasoning path.
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step-content" data-step="3">
+          <div style="display: flex; justify-content: center; gap: 40px; padding: 40px 0; flex-wrap: wrap;">
+            <div style="text-align: center; padding: 24px; background: #e8f5e9; border-radius: 16px; min-width: 200px;">
+              <div style="font-size: 32px; margin-bottom: 12px;">✓</div>
+              <div style="font-size: 16px; font-weight: 600; color: #2e7d32;">Accept SLM Token</div>
+              <div style="font-size: 13px; color: #558b2f; margin-top: 8px;">Identical or neutral</div>
+            </div>
+            <div style="text-align: center; padding: 24px; background: #fce4ec; border-radius: 16px; min-width: 200px;" id="routeDecision">
+              <div style="font-size: 32px; margin-bottom: 12px;">⚡</div>
+              <div style="font-size: 16px; font-weight: 600; color: #c62828;">Route to LLM</div>
+              <div style="font-size: 13px; color: #c62828; margin-top: 8px;">Divergent token detected</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step-content" data-step="4">
+          <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Generated Response with R2R Routing</div>
+            <div class="token-stream" id="finalStream" style="justify-content: center;">
+              <!-- Final tokens will be shown here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="workflow-legend">
+        <div class="legend-item">
+          <div class="legend-dot slm"></div>
+          <span>SLM Token (Identical)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot neutral"></div>
+          <span>SLM Token (Neutral)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot llm"></div>
+          <span>LLM Token (Divergent)</span>
+        </div>
+      </div>
+      <p style="text-align: center; margin-top: 16px; font-size: 13px; color: var(--apple-gray);">
+        <i class="fas fa-mouse-pointer" style="margin-right: 6px;"></i>
+        Hover over <span style="color: #1565c0; font-weight: 500;">blue</span> or <span style="color: #c62828; font-weight: 500;">red</span> tokens to see why the router made that decision
+      </p>
+    </div>
+
+    <!-- Video Demo -->
+    <div class="reveal" style="margin-top: 48px;">
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Watch Video Demo</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <div class="demo-video" style="margin: 0;">
+                <video src="./static/videos/R2R_demo.mp4" loop muted playsinline controls></video>
+              </div>
+              <p style="text-align: center; color: var(--apple-gray); font-size: 14px; margin-top: 16px;">
+                Side-by-side comparison: R1-32B (left) vs R2R (right). Red tokens are routed to LLM.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Method Section -->
+<section class="section section-gray" id="method">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">How It Works</p>
+      <h2 class="section-title">Intelligent token routing.</h2>
+      <p class="section-subtitle">
+        R2R uses a lightweight neural router trained on automatically generated token-level labels to decide which tokens need the large model's attention.
+      </p>
+    </div>
+
+    <div class="method-visual reveal">
+      <img src="./static/images/main_method.png" alt="R2R Method Overview">
+    </div>
+
+    <!-- Expandable Method Details -->
+    <div class="reveal">
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Automatic Data Generation Pipeline</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <p style="margin-bottom: 16px;">
+                A key contribution of R2R is an <strong>automatic pipeline for generating token-level routing labels</strong> without expensive human annotation:
+              </p>
+              <ol style="margin-left: 24px; margin-bottom: 16px; color: var(--apple-gray); line-height: 1.8;">
+                <li><strong>LLM generates</strong> a complete response to the problem</li>
+                <li><strong>SLM prefills</strong> the LLM's response to identify tokens where predictions differ</li>
+                <li><strong>LLM continues</strong> from each differing token to produce alternative continuations</li>
+                <li><strong>Verifier model</strong> compares continuations to label differences as neutral or divergent</li>
+              </ol>
+              <p style="margin-bottom: 16px;">
+                This pipeline produces large-scale training data automatically, enabling the router to learn which token differences actually matter for reasoning.
+              </p>
+              <img src="./static/images/data_gen_overview.png" alt="Data Generation Pipeline" style="width: 100%; border-radius: 12px; margin-top: 16px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Path-Following Routing Strategy</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <p style="margin-bottom: 16px;">
+                At each generation step, R2R compares the next-token predictions from both the SLM and LLM. If predictions are identical, the efficient SLM token is used. When they differ, a continuation-and-verification mechanism determines whether the difference is:
+              </p>
+              <ul style="margin-left: 24px; margin-bottom: 16px; color: var(--apple-gray);">
+                <li><strong>Neutral:</strong> Doesn't affect reasoning outcomes (use SLM)</li>
+                <li><strong>Divergent:</strong> Alters the reasoning path (route to LLM)</li>
+              </ul>
+              <p>
+                The core insight is that the SLM can follow the LLM's reasoning path if we correct only the divergent tokens—the SLM then continues from the corrected token without further intervention until the next divergent token.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Neural Router Architecture</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <p style="margin-bottom: 16px;">
+                The router is a lightweight <strong>56M-parameter feed-forward network</strong> that takes three inputs from the SLM:
+              </p>
+              <ul style="margin-left: 24px; color: var(--apple-gray);">
+                <li><strong>Top-100 SLM logits:</strong> Captures prediction uncertainty (higher entropy indicates potential divergence)</li>
+                <li><strong>Token embeddings:</strong> Encodes token frequency biases (rare tokens are more likely to diverge)</li>
+                <li><strong>Last-layer hidden states:</strong> Provides semantic context for the current generation step</li>
+              </ul>
+              <p style="margin-top: 16px;">
+                The router outputs a binary classification probability indicating whether the current token diverges from the LLM's reasoning path. This enables <strong>immediate routing decisions</strong> during inference without waiting for continuation verification.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Predictive Indicators of Divergence</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <div class="observations-grid" style="grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                <div>
+                  <img src="./static/images/entropy_distribution.png" alt="Entropy Distribution" style="width: 100%; border-radius: 12px; margin-bottom: 12px;">
+                  <h4 style="font-size: 16px; margin-bottom: 8px;">SLM Entropy</h4>
+                  <p style="font-size: 14px; color: var(--apple-gray);">Divergent tokens show 3.8× higher entropy in SLM output logits, indicating prediction uncertainty.</p>
+                </div>
+                <div>
+                  <img src="./static/images/token_divergence_frequency.png" alt="Token Frequency" style="width: 100%; border-radius: 12px; margin-bottom: 12px;">
+                  <h4 style="font-size: 16px; margin-bottom: 8px;">Token Frequency</h4>
+                  <p style="font-size: 14px; color: var(--apple-gray);">Low-frequency tokens are more likely to be divergent due to limited SLM training on rare tokens.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Results Section -->
+<section class="section" id="results">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">Performance</p>
+      <h2 class="section-title">State-of-the-art efficiency.</h2>
+      <p class="section-subtitle">
+        R2R advances the Pareto frontier of test-time scaling efficiency across AIME, GPQA, and LiveCodeBench.
+      </p>
+    </div>
+
+    <div class="results-comparison reveal">
+      <div class="result-card">
+        <div class="result-method">R1-7B (Baseline)</div>
+        <div class="result-value">28%</div>
+        <div class="result-label">Average Accuracy</div>
+        <div class="result-metrics">
+          <div class="result-metric"><strong>7.0B</strong> params</div>
+          <div class="result-metric"><strong>154K</strong> cost*</div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-method">R1-14B</div>
+        <div class="result-value">43%</div>
+        <div class="result-label">Average Accuracy</div>
+        <div class="result-metrics">
+          <div class="result-metric"><strong>14B</strong> params</div>
+          <div class="result-metric"><strong>234K</strong> cost*</div>
+        </div>
+      </div>
+
+      <div class="result-card highlight">
+        <div class="result-method">R2R (Ours)</div>
+        <div class="result-value">46%</div>
+        <div class="result-label">Average Accuracy</div>
+        <div class="result-metrics">
+          <div class="result-metric"><strong>5.6B</strong> avg params</div>
+          <div class="result-metric"><strong>103K</strong> cost*</div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-method">R1-32B (LLM)</div>
+        <div class="result-value">50%</div>
+        <div class="result-label">Average Accuracy</div>
+        <div class="result-metrics">
+          <div class="result-metric"><strong>32B</strong> params</div>
+          <div class="result-metric"><strong>537K</strong> cost*</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: var(--apple-gray); font-size: 12px; margin-top: 16px;">
+      *Cost = output tokens × activated parameters (in billions). Lower is better.
+    </p>
+
+    <div class="chart-container reveal">
+      <img src="./static/images/all_pareto_subplots_params.png" alt="Pareto Frontier Chart">
+      <p style="margin-top: 16px; color: var(--apple-gray); font-size: 14px;">
+        R2R consistently advances the Pareto frontier across AIME, GPQA, and LiveCodeBench benchmarks.
+      </p>
+    </div>
+
+    <!-- Expandable Results Details -->
+    <div class="reveal">
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Detailed Benchmark Results</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--apple-light-gray);">
+                      <th style="text-align: left; padding: 12px 16px;">Method</th>
+                      <th style="text-align: center; padding: 12px 16px;">AIME</th>
+                      <th style="text-align: center; padding: 12px 16px;">LiveCodeBench</th>
+                      <th style="text-align: center; padding: 12px 16px;">GPQA</th>
+                      <th style="text-align: center; padding: 12px 16px;">Avg. Params</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid var(--apple-light-gray);">
+                      <td style="padding: 12px 16px;">R1-1.5B (SLM)</td>
+                      <td style="text-align: center; padding: 12px 16px;">12%</td>
+                      <td style="text-align: center; padding: 12px 16px;">9%</td>
+                      <td style="text-align: center; padding: 12px 16px;">8%</td>
+                      <td style="text-align: center; padding: 12px 16px;">1.5B</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--apple-light-gray);">
+                      <td style="padding: 12px 16px;">R1-7B</td>
+                      <td style="text-align: center; padding: 12px 16px;">32%</td>
+                      <td style="text-align: center; padding: 12px 16px;">24%</td>
+                      <td style="text-align: center; padding: 12px 16px;">29%</td>
+                      <td style="text-align: center; padding: 12px 16px;">7.0B</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--apple-light-gray);">
+                      <td style="padding: 12px 16px;">R1-14B</td>
+                      <td style="text-align: center; padding: 12px 16px;">48%</td>
+                      <td style="text-align: center; padding: 12px 16px;">38%</td>
+                    <td style="text-align: center; padding: 12px 16px;">44%</td>
+                    <td style="text-align: center; padding: 12px 16px;">14.0B</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid var(--apple-light-gray); background: linear-gradient(90deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);">
+                    <td style="padding: 12px 16px; font-weight: 600;">R2R (Ours)</td>
+                    <td style="text-align: center; padding: 12px 16px; font-weight: 600;">55%</td>
+                    <td style="text-align: center; padding: 12px 16px; font-weight: 600;">39%</td>
+                    <td style="text-align: center; padding: 12px 16px; font-weight: 600;">44%</td>
+                    <td style="text-align: center; padding: 12px 16px; font-weight: 600;">5.6B</td>
+                  </tr>
+                    <tr>
+                      <td style="padding: 12px 16px;">R1-32B (LLM)</td>
+                      <td style="text-align: center; padding: 12px 16px;">57%</td>
+                      <td style="text-align: center; padding: 12px 16px;">45%</td>
+                      <td style="text-align: center; padding: 12px 16px;">46%</td>
+                      <td style="text-align: center; padding: 12px 16px;">32.0B</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="expandable-section">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Routing Behavior Analysis</span>
+          <div class="expandable-icon">
+            <i class="fas fa-plus" style="font-size: 12px;"></i>
+          </div>
+        </div>
+        <div class="expandable-content">
+          <div class="expandable-content-inner">
+            <div class="expandable-inner">
+              <img src="./static/images/routing_observation.png" alt="Routing Behavior" style="width: 100%; max-width: 600px; border-radius: 12px; margin-bottom: 16px;">
+              <p style="color: var(--apple-gray); font-size: 14px;">
+                R2R naturally learns efficient routing patterns: fewer LLM calls during straightforward reply phases,
+                and more at the beginning and end of each thought where reasoning direction is determined.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Authors Section -->
+<section class="section section-gray authors-section">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">Team</p>
+      <h2 class="section-title">Meet the researchers.</h2>
+    </div>
+
+    <div class="authors-list reveal">
+      <a href="https://nicsefc.ee.tsinghua.edu.cn/people/TianyuFu" class="author-tag">
+        Tianyu Fu<sup>1,2*</sup>
+      </a>
+      <span class="author-tag" style="cursor: default;">Yi Ge<sup>1*</sup></span>
+      <a href="https://youyc22.com/" class="author-tag">
+        Yichen You<sup>1</sup>
+      </a>
+      <a href="https://nicsefc.ee.tsinghua.edu.cn/people/EnshuLiu" class="author-tag">
+        Enshu Liu<sup>1</sup>
+      </a>
+      <a href="https://zhihang.cc/" class="author-tag">
+        Zhihang Yuan<sup>2</sup>
+      </a>
+      <a href="https://dai.sjtu.edu.cn/pepledetail.html?id=218" class="author-tag">
+        Guohao Dai<sup>3,2</sup>
+      </a>
+      <span class="author-tag" style="cursor: default;">Shengen Yan<sup>2</sup></span>
+      <span class="author-tag" style="cursor: default;">Huazhong Yang<sup>1</sup></span>
+      <a href="https://nicsefc.ee.tsinghua.edu.cn/people/YuWang" class="author-tag">
+        Yu Wang<sup>1</sup>
+      </a>
+    </div>
+
+    <div class="affiliations reveal">
+      <sup>1</sup>Tsinghua University &nbsp;&nbsp;
+      <sup>2</sup>Infinigence AI &nbsp;&nbsp;
+      <sup>3</sup>Shanghai Jiao Tong University<br>
+      <span style="font-size: 12px;">*Equal contribution</span>
+    </div>
+  </div>
+</section>
+
+<!-- Citation Section -->
+<section class="section">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">Citation</p>
+      <h2 class="section-title">Cite our work.</h2>
+      <p class="section-subtitle">
+        If you find R2R useful for your research, please consider citing our paper.
+      </p>
+    </div>
+
+    <div class="reveal" style="margin-top: 32px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <span style="font-size: 14px; font-weight: 600; color: var(--apple-black);">
+          <i class="fas fa-quote-left" style="margin-right: 8px; color: var(--apple-gray);"></i>
+          BibTeX
+        </span>
+        <button class="copy-btn" onclick="copyBibtex()" style="position: static;">
+          <i class="fas fa-copy"></i> Copy BibTeX
+        </button>
+      </div>
+      <div class="bibtex-container" style="margin-top: 0;">
+        <pre><code id="bibtexCode">@article{fu2025r2r,
+          title={R2R: Efficiently Navigating Divergent Reasoning Paths with Small-Large Model Token Routing},
+          author={Fu, Tianyu and Ge, Yi and You, Yichen and Liu, Enshu and Yuan, Zhihang and Dai, Guohao and Yan, Shengen and Yang, Huazhong and Wang, Yu},
+          journal={arXiv preprint arXiv:2505.21600},
+          year={2025}
+        }</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="https://arxiv.org/abs/2505.21600">Paper</a>
+        <a href="https://github.com/thu-nics/R2R">Code</a>
+        <a href="https://huggingface.co/nics-efc/R2R_router">Models</a>
+      </div>
+      <div class="footer-social">
+        <a href="https://github.com/thu-nics/R2R">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://arxiv.org/abs/2505.21600">
+          <i class="fas fa-file-alt"></i>
+        </a>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 32px; color: rgba(255,255,255,0.5); font-size: 12px;">
+      © 2025 NICS-EFC Team.
+    </div>
+  </div>
+</footer>
+
+<!-- Scroll to Top Button -->
+<button class="scroll-top" id="scrollTop" onclick="scrollToTop()">
+  <i class="fas fa-chevron-up"></i>
+</button>
+
+<script>
+// Expandable sections with smooth animation
+function toggleExpand(header) {
+  const section = header.parentElement;
+  const isOpening = !section.classList.contains('open');
+
+  // Close other sections in the same container for accordion effect (optional)
+  // const siblings = section.parentElement.querySelectorAll('.expandable-section.open');
+  // siblings.forEach(s => { if (s !== section) s.classList.remove('open'); });
+
+  section.classList.toggle('open');
+  const icon = header.querySelector('.expandable-icon i');
+  icon.className = section.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
+}
+
+// Copy BibTeX
+function copyBibtex() {
+  const code = document.getElementById('bibtexCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+    }, 2000);
+  });
+}
+
+// Scroll to top
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Scroll reveal animation
+function reveal() {
+  const reveals = document.querySelectorAll('.reveal');
+  reveals.forEach(element => {
+    const windowHeight = window.innerHeight;
+    const elementTop = element.getBoundingClientRect().top;
+    const elementVisible = 150;
+
+    if (elementTop < windowHeight - elementVisible) {
+      element.classList.add('active');
+    }
+  });
+}
+
+window.addEventListener('scroll', reveal);
+window.addEventListener('load', reveal);
+
+// Interactive Workflow Animation
+let workflowInterval;
+let currentStage = 0;
+let isPlaying = false;
+
+// Sample tokens with routing explanations (based on actual R2R token analysis)
+const sampleTokens = [
+  { text: "Let", type: "slm" },
+  { text: "'s", type: "slm" },
+  { text: " think", type: "slm" },
+  { text: " step", type: "slm" },
+  { text: " by", type: "slm" },
+  { text: " step", type: "slm" },
+  { text: ".", type: "slm" },
+  { text: " First", type: "slm" },
+  { text: ",", type: "slm" },
+  {
+    text: " let",
+    type: "neutral",
+    slmContinuation: "let <<us>> define the variables",
+    llmContinuation: "let <<me>> set up the equations",
+    reason: "The difference between 'us' and 'me' is stylistic and doesn't affect the mathematical reasoning. Both lead to the same problem setup."
+  },
+  { text: " me", type: "slm" },
+  { text: " set", type: "slm" },
+  { text: " up", type: "slm" },
+  {
+    text: " equations",
+    type: "llm",
+    slmContinuation: "set up <<the problem>> with distance formula",
+    llmContinuation: "set up <<equations>> for both scenarios",
+    reason: "The divergence from 'the problem' to 'equations' is significant. Setting up explicit equations is crucial for solving this problem correctly, while 'the problem' is vague and may lead to incomplete formulation."
+  },
+  { text: ".", type: "slm" },
+  { text: " Walking", type: "slm" },
+  { text: " 9", type: "slm" },
+  { text: " km", type: "slm" },
+  { text: " at", type: "slm" },
+  { text: " speed", type: "slm" },
+  { text: " s", type: "slm" },
+  {
+    text: " takes",
+    type: "llm",
+    slmContinuation: "at speed s <<gives>> us total time",
+    llmContinuation: "at speed s <<takes>> 9/s hours",
+    reason: "The LLM correctly uses 'takes' to express the time calculation, while 'gives' from SLM is less precise. This ensures the time formula 9/s is correctly derived."
+  },
+  { text: " 9", type: "slm" },
+  { text: "/", type: "slm" },
+  { text: "s", type: "slm" },
+  { text: " hours", type: "slm" },
+  {
+    text: ", including",
+    type: "neutral",
+    slmContinuation: "hours<<, plus>> t minutes at the coffee shop",
+    llmContinuation: "hours<<, including>> t minutes at the coffee shop",
+    reason: "Both 'plus' and 'including' convey the same mathematical meaning that t minutes is part of the total time. The difference is purely stylistic."
+  },
+  {
+    text: " t",
+    type: "llm",
+    slmContinuation: "including <<the coffee>> shop stop",
+    llmContinuation: "including <<t>> minutes in the coffee shop",
+    reason: "The SLM's 'the coffee shop stop' is vague, while the LLM correctly specifies 't minutes'. This precision is essential for setting up the correct equation with the variable t."
+  },
+  { text: " minutes", type: "slm" },
+  { text: "...", type: "slm" }
+];
+
+// Create token element with optional tooltip
+function createTokenElement(token) {
+  const span = document.createElement('span');
+  span.className = `token token-${token.type}`;
+  span.textContent = token.text;
+
+  // Add tooltip for neutral and divergent tokens
+  if ((token.type === 'neutral' || token.type === 'llm') && token.reason) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'token-tooltip';
+
+    // SLM continuation section
+    if (token.slmContinuation) {
+      const slmSection = document.createElement('div');
+      slmSection.className = 'tooltip-section';
+      slmSection.innerHTML = `
+        <div class="tooltip-label">SLM Continuation</div>
+        <div class="tooltip-content">${formatContinuation(token.slmContinuation, 'slm')}</div>
+      `;
+      tooltip.appendChild(slmSection);
+    }
+
+    // LLM continuation section
+    if (token.llmContinuation) {
+      const llmSection = document.createElement('div');
+      llmSection.className = 'tooltip-section';
+      llmSection.innerHTML = `
+        <div class="tooltip-label">LLM Continuation</div>
+        <div class="tooltip-content">${formatContinuation(token.llmContinuation, 'llm')}</div>
+      `;
+      tooltip.appendChild(llmSection);
+    }
+
+    // Verifier reason section
+    if (token.reason) {
+      const reasonSection = document.createElement('div');
+      reasonSection.className = 'tooltip-section';
+      reasonSection.innerHTML = `
+        <div class="tooltip-label">Verifier Analysis</div>
+        <div class="tooltip-content">${token.reason}</div>
+        <span class="tooltip-tag ${token.type === 'neutral' ? 'neutral' : 'divergent'}">
+          ${token.type === 'neutral' ? 'Neutral Difference' : 'Divergent Token'}
+        </span>
+      `;
+      tooltip.appendChild(reasonSection);
+    }
+
+    span.appendChild(tooltip);
+  }
+
+  return span;
+}
+
+// Format continuation text with highlighted differences
+function formatContinuation(text, type) {
+  // Replace <<word>> with highlighted span
+  return text.replace(/<<(.*?)>>/g, (match, word) => {
+    const colorClass = type === 'slm' ? 'tooltip-highlight-slm' : 'tooltip-highlight-llm';
+    return `<span class="${colorClass}">${word}</span>`;
+  });
+}
+
+function setActiveStage(stage) {
+  document.querySelectorAll('.workflow-stage').forEach((el, i) => {
+    el.classList.toggle('active', i === stage);
+  });
+  document.querySelectorAll('.workflow-step-content').forEach((el, i) => {
+    el.classList.toggle('active', i === stage);
+  });
+  currentStage = stage;
+}
+
+// Shared animation state
+let tokenIndex = 0;
+let firstDivergentIndex = 0;
+let currentAnimationInterval = null;
+let autoAdvance = true; // Whether to auto-advance to next stage
+
+function startWorkflow() {
+  // Play button: play from current stage and auto-advance through all
+  autoAdvance = true;
+  startWorkflowFromStage(currentStage, true);
+}
+
+function playCurrentStageOnly(stageIndex) {
+  // Click on stage: play only this stage's content, no auto-advance
+  autoAdvance = false;
+  startWorkflowFromStage(stageIndex, false);
+}
+
+function startWorkflowFromStage(stageIndex, shouldAutoAdvance) {
+  // Stop any current animation
+  if (currentAnimationInterval) {
+    clearInterval(currentAnimationInterval);
+    currentAnimationInterval = null;
+  }
+  isPlaying = false;
+  autoAdvance = shouldAutoAdvance;
+
+  // Small delay to ensure previous animation stops cleanly
+  setTimeout(() => {
+    // Set starting stage
+    currentStage = stageIndex;
+    setActiveStage(stageIndex);
+
+    // Reset token index based on starting stage
+    tokenIndex = 0;
+    firstDivergentIndex = sampleTokens.findIndex(t => t.type === 'llm');
+
+    // Clear token streams if starting from early stages
+    if (stageIndex <= 1) {
+      document.getElementById('tokenStream').innerHTML = '';
+    }
+    if (stageIndex < 4) {
+      document.getElementById('finalStream').innerHTML = '';
+    }
+
+    // Start playing
+    isPlaying = true;
+    document.getElementById('playBtn').disabled = true;
+    document.getElementById('pauseBtn').disabled = false;
+
+    // Start animating current stage
+    animateWorkflowStage();
+  }, 50);
+}
+
+function animateWorkflowStage() {
+  if (!isPlaying) return;
+
+  const tokenStream = document.getElementById('tokenStream');
+  const finalStream = document.getElementById('finalStream');
+
+  // Handle stage-specific animations
+  if (currentStage === 1) {
+    // Token generation animation - stop at first red token
+    tokenStream.innerHTML = '';
+    tokenIndex = 0;
+    currentAnimationInterval = setInterval(() => {
+      if (tokenIndex <= firstDivergentIndex && isPlaying) {
+        const token = sampleTokens[tokenIndex];
+        const span = createTokenElement(token);
+        // Highlight the divergent token when we reach it
+        if (tokenIndex === firstDivergentIndex) {
+          span.classList.add('token-highlight');
+        }
+        tokenStream.appendChild(span);
+        tokenIndex++;
+
+        // Stop at the first divergent token
+        if (tokenIndex > firstDivergentIndex) {
+          clearInterval(currentAnimationInterval);
+          currentAnimationInterval = null;
+          // Only advance if autoAdvance is true
+          if (isPlaying && autoAdvance) {
+            setTimeout(() => {
+              if (isPlaying && autoAdvance) {
+                currentStage = 2;
+                setActiveStage(2);
+                setTimeout(animateWorkflowStage, 1200);
+              } else {
+                finishAnimation();
+              }
+            }, 1200);
+          } else {
+            finishAnimation();
+          }
+        }
+      } else {
+        clearInterval(currentAnimationInterval);
+        currentAnimationInterval = null;
+        if (isPlaying && autoAdvance) {
+          setTimeout(() => {
+            if (isPlaying && autoAdvance) {
+              currentStage = 2;
+              setActiveStage(2);
+              setTimeout(animateWorkflowStage, 1000);
+            } else {
+              finishAnimation();
+            }
+          }, 1000);
+        } else {
+          finishAnimation();
+        }
+      }
+    }, 120);
+    return;
+  }
+
+  if (currentStage === 4) {
+    // Show final result with tooltips
+    finalStream.innerHTML = '';
+    sampleTokens.forEach(token => {
+      const span = createTokenElement(token);
+      finalStream.appendChild(span);
+    });
+    // Animation complete
+    finishAnimation();
+    return;
+  }
+
+  // For stages 0, 2, 3
+  if (currentStage < 4) {
+    // If autoAdvance, move to next stage after delay
+    if (autoAdvance) {
+      setTimeout(() => {
+        if (isPlaying && autoAdvance) {
+          currentStage++;
+          setActiveStage(currentStage);
+          animateWorkflowStage();
+        }
+      }, 1800);
+    } else {
+      // Just show this stage, then finish
+      setTimeout(() => {
+        finishAnimation();
+      }, 500);
+    }
+  }
+}
+
+function finishAnimation() {
+  isPlaying = false;
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('pauseBtn').disabled = true;
+}
+
+function pauseWorkflow() {
+  isPlaying = false;
+  autoAdvance = false;
+  if (currentAnimationInterval) {
+    clearInterval(currentAnimationInterval);
+    currentAnimationInterval = null;
+  }
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('pauseBtn').disabled = true;
+}
+
+function resetWorkflow() {
+  isPlaying = false;
+  autoAdvance = true;
+  if (currentAnimationInterval) {
+    clearInterval(currentAnimationInterval);
+    currentAnimationInterval = null;
+  }
+  currentStage = 0;
+  tokenIndex = 0;
+  setActiveStage(0);
+  document.getElementById('tokenStream').innerHTML = '';
+  document.getElementById('finalStream').innerHTML = '';
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('pauseBtn').disabled = true;
+}
+
+// Stage click handlers - Play only the clicked stage content
+document.querySelectorAll('.workflow-stage').forEach((stage, index) => {
+  stage.addEventListener('click', () => {
+    playCurrentStageOnly(index);
+  });
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveStage(0);
+
+
+});
+</script>

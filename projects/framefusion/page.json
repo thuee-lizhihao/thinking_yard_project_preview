@@ -1,0 +1,26 @@
+{
+  "title": "thu-nics/FrameFusion",
+  "description": "FrameFusion: Combining Similarity and Importance for Video Token Reduction on Large Vision Language Models",
+  "sections": [
+    {
+      "id": "overview",
+      "label": "Idea"
+    },
+    {
+      "id": "observations",
+      "label": "Observations"
+    },
+    {
+      "id": "examples",
+      "label": "Examples"
+    },
+    {
+      "id": "results",
+      "label": "Results"
+    },
+    {
+      "id": "bibtex",
+      "label": "BibTeX"
+    }
+  ]
+}

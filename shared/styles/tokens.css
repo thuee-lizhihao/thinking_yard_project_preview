@@ -1,0 +1,21 @@
+/* Source: alpha_design_system; Apple system fonts follow the repository house style. */
+:root {
+  --apple-black: #1d1d1f;
+  --apple-gray: #86868b;
+  --apple-light-gray: #f5f5f7;
+  --apple-white: #ffffff;
+  --apple-off-white: #fbfbfd;
+  --apple-blue: #0071e3;
+  --apple-blue-hover: #0077ed;
+  --apple-blue-dark: #0a84ff;
+  --c2c-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-start: #fbfbfd;
+  --gradient-end: #f5f5f7;
+  --max-width: 980px;
+  --max-width-wide: 1200px;
+  --section-padding: 100px 0;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", Monaco, "Courier New", monospace;
+  --nav-label-size: 13px;
+  --nav-label-weight: 500;
+}

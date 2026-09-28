@@ -1,0 +1,13 @@
+{
+  "name": "Scaling Paths",
+  "team": "NICS-EFC",
+  "origin": "https://fuvty.github.io",
+  "basePath": "/thinking_yard_project_page",
+  "hubSections": [
+    { "id": "overview", "label": "Overview" },
+    { "id": "route-one", "label": "Continue scaling" },
+    { "id": "route-two", "label": "Better trade-off" },
+    { "id": "route-three", "label": "New scaling axis" },
+    { "id": "projects", "label": "Projects" }
+  ]
+}

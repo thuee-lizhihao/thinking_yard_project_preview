@@ -1,0 +1,102 @@
+<!-- Preload fonts -->
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <!-- MathJax -->
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Scroll reveal animation
+      reveal();
+    });
+
+    // Scroll reveal function
+    function reveal() {
+      const reveals = document.querySelectorAll('.reveal');
+      reveals.forEach(element => {
+        const windowHeight = window.innerHeight;
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+
+        if (elementTop < windowHeight - elementVisible) {
+          element.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', reveal);
+
+    // Scroll to top function
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Toggle expandable sections
+    function toggleExpand(header) {
+      const section = header.parentElement;
+      section.classList.toggle('open');
+      const icon = header.querySelector('.expandable-icon i');
+      icon.className = section.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
+    }
+
+    // Copy BibTeX function
+    function copyBibtex() {
+      const code = document.getElementById('bibtexCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy BibTeX';
+        }, 2000);
+      });
+    }
+
+    // Switch model size for results tables
+    function switchModelSize(size) {
+      // Update active tab
+      const tabs = document.querySelectorAll('.model-tab');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Hide all results, show selected
+      const allResults = document.querySelectorAll('.model-results');
+      allResults.forEach(result => result.style.display = 'none');
+      document.getElementById('results-' + size).style.display = 'block';
+
+      // Update summary stats based on model size
+      const stats = {
+        '0.6B': { gain: '+5.3%', avg: '35.2%' },
+        '1.7B': { gain: '+6.2%', avg: '53.7%' },
+        '4B': { gain: '+2.2%', avg: '66.8%' }
+      };
+
+      const selected = stats[size];
+      document.getElementById('summaryGain').textContent = selected.gain;
+      document.getElementById('summaryAvg').textContent = selected.avg;
+    }
+
+    // Switch pipeline step
+    function switchPipelineStep(step) {
+      // Remove active from all steps
+      const steps = document.querySelectorAll('.pipeline-step');
+      const contents = document.querySelectorAll('.pipeline-content');
+
+      steps.forEach(s => s.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+
+      // Add active to selected
+      steps[step].classList.add('active');
+      document.getElementById('pipeline-' + step).classList.add('active');
+    }
+  </script>

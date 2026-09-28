@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "r2r",
+    "name": "R2R",
+    "category": "adaptivity",
+    "route": "02",
+    "description": "Token-level routing for reasoning LLMs",
+    "logo": "shared/assets/r2r.png"
+  },
+  {
+    "slug": "tah",
+    "name": "TaH",
+    "category": "adaptivity",
+    "route": "03",
+    "description": "Selective latent thinking for reasoning LLMs",
+    "logo": "shared/assets/tah.png"
+  },
+  {
+    "slug": "c2c",
+    "name": "C2C",
+    "category": "context",
+    "route": "03",
+    "description": "Communicate through KV-Cache between LLMs",
+    "logo": "shared/assets/c2c.png"
+  },
+  {
+    "slug": "framefusion",
+    "name": "FrameFusion",
+    "category": "compression",
+    "route": "02",
+    "description": "Efficient video token reduction for LVLMs",
+    "logo": "shared/assets/framefusion.png"
+  },
+  {
+    "slug": "moa",
+    "name": "MoA",
+    "category": "compression",
+    "route": "02",
+    "description": "Mixture of attention for efficient LLMs",
+    "logo": "shared/assets/moa.png"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "title": "thu-nics/MoA",
+  "description": "MoA: Mixture of Attention Spans - optimizing LLM inference efficiency with heterogeneous sliding-window lengths.",
+  "sections": [
+    {
+      "id": "overview",
+      "label": "Idea"
+    },
+    {
+      "id": "observations",
+      "label": "Observations"
+    },
+    {
+      "id": "method",
+      "label": "Method"
+    },
+    {
+      "id": "results",
+      "label": "Results"
+    },
+    {
+      "id": "bibtex",
+      "label": "BibTeX"
+    }
+  ]
+}

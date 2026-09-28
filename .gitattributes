@@ -1,0 +1,2 @@
+# Preserve imported scientific CSV bytes, including their original line endings.
+*.csv -text -whitespace

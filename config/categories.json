@@ -1,0 +1,20 @@
+[
+  {
+    "id": "compression",
+    "label": "Compression",
+    "shortLabel": "Compression",
+    "description": "Reduce the cost of tokens and attention without discarding what matters."
+  },
+  {
+    "id": "adaptivity",
+    "label": "Adaptivity Scaling",
+    "shortLabel": "Adaptivity",
+    "description": "Allocate reasoning effort dynamically, where and when it is useful."
+  },
+  {
+    "id": "context",
+    "label": "Context Scaling",
+    "shortLabel": "Context",
+    "description": "Scale what models can exchange beyond text-only communication."
+  }
+]

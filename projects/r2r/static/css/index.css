@@ -1,0 +1,717 @@
+
+    /* Global Navigation (Apple-style with projects) */
+
+    /* Local Navigation (Project-specific) */
+
+    /* Project switcher dropdown */
+
+    /* Dropdown menu */
+
+    /* Mobile Menu Toggle */
+
+    /* Responsive nav */
+
+    /* Hero Section */
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--apple-blue);
+      border: 1px solid var(--apple-blue);
+      padding: 16px 32px;
+      border-radius: 980px;
+      font-size: 17px;
+      font-weight: 400;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding-right: 0.05em;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-value {
+      font-size: 56px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInUp 0.8s ease-out 0.4s backwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      border-radius: 980px;
+      font-size: 17px;
+      font-weight: 400;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Section Styles */
+
+    /* Apple-style text highlighting */
+    .text-highlight {
+      color: var(--apple-black);
+    }
+
+    .text-highlight-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-dark .text-highlight,
+    .section-dark .text-highlight-white {
+      color: #fff;
+    }
+
+    /* Muted text for contrast */
+    .text-muted {
+      color: var(--apple-gray);
+    }
+
+    .section-dark .text-muted {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* The Problem Section */
+
+    .problem-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+      min-width: 200px;
+    }
+
+    .problem-box:hover {
+      transform: translateY(-4px);
+    }
+
+    .arrow-icon {
+      font-size: 24px;
+      color: var(--apple-gray);
+    }
+
+    /* Key Insight Section */
+
+    @media (max-width: 768px) {
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .insight-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .insight-percentage {
+      font-size: 64px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .insight-label {
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    /* Interactive Workflow Section */
+    .workflow-container {
+      margin: 60px 0;
+      padding: 40px;
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.06);
+    }
+
+    .workflow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .workflow-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .workflow-controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .workflow-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--apple-light-gray);
+      color: var(--apple-black);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .workflow-btn:hover {
+      background: var(--apple-blue);
+      color: #fff;
+    }
+
+    .workflow-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .workflow-stages {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 40px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .workflow-stage {
+      flex: 1;
+      min-width: 120px;
+      padding: 16px;
+      background: var(--apple-light-gray);
+      border-radius: 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .workflow-stage.active {
+      background: var(--apple-blue);
+      color: #fff;
+    }
+
+    .workflow-stage-number {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .workflow-stage-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .workflow-visualization {
+      min-height: 300px;
+      border-radius: 16px;
+      background: var(--apple-light-gray);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .workflow-step-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .workflow-step-content.active {
+      display: block;
+    }
+
+    .token-stream {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .token {
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: default;
+      position: relative;
+      display: inline-block;
+    }
+
+    .token-slm {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .token-llm {
+      background: #fce4ec;
+      color: #c62828;
+      cursor: pointer;
+    }
+
+    .token-neutral {
+      background: #e3f2fd;
+      color: #1565c0;
+      cursor: pointer;
+    }
+
+    .token-llm:hover,
+    .token-neutral:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    .token-highlight {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Token Tooltips */
+    .token-tooltip {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.95);
+      width: 340px;
+      padding: 16px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--apple-black);
+      text-align: left;
+      pointer-events: none;
+    }
+
+    .token-tooltip::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      border-left: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .token:hover .token-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Ensure workflow container doesn't clip tooltips */
+    .workflow-visualization {
+      overflow: visible !important;
+    }
+
+    .workflow-step-content {
+      overflow: visible;
+    }
+
+    .token-stream {
+      overflow: visible;
+    }
+
+    .tooltip-section {
+      margin-bottom: 12px;
+    }
+
+    .tooltip-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .tooltip-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--apple-gray);
+      margin-bottom: 4px;
+    }
+
+    .tooltip-content {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .tooltip-highlight-slm {
+      color: #1565c0;
+      font-weight: 600;
+    }
+
+    .tooltip-highlight-llm {
+      color: #c62828;
+      font-weight: 600;
+    }
+
+    .tooltip-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .tooltip-tag.neutral {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .tooltip-tag.divergent {
+      background: #fce4ec;
+      color: #c62828;
+    }
+
+    .workflow-legend {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.slm { background: #2e7d32; }
+    .legend-dot.llm { background: #c62828; }
+    .legend-dot.neutral { background: #1565c0; }
+
+    /* Expandable Sections with Smooth Animations */
+
+    /* Dark section expandable hover fix */
+
+    /* Results Section */
+    .results-comparison {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 1024px) {
+      .results-comparison {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .results-comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .result-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+      transition: transform 0.3s ease;
+    }
+
+    .result-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .result-card.highlight {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .result-card.highlight .result-label,
+    .result-card.highlight .result-metric {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .result-method {
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    .result-value {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .result-label {
+      font-size: 14px;
+      color: var(--apple-gray);
+      margin-bottom: 16px;
+    }
+
+    .result-metrics {
+      display: flex;
+      gap: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .result-card.highlight .result-metrics {
+      border-top-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .result-metric {
+      font-size: 13px;
+      color: var(--apple-gray);
+    }
+
+    .result-metric strong {
+      color: var(--apple-black);
+      font-weight: 600;
+    }
+
+    .result-card.highlight .result-metric strong {
+      color: #fff;
+    }
+
+    /* Chart Section */
+    .chart-container {
+      margin: 60px 0;
+      text-align: center;
+    }
+
+    .chart-container img {
+      max-width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Authors Section */
+
+    .affiliations {
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--apple-gray);
+    }
+
+    /* Footer */
+
+    .footer-social a:hover {
+      background: var(--apple-blue);
+    }
+
+    /* BibTeX */
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Scroll reveal animations */
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      /* Mobile navigation */
+
+      /* Global nav font size increase for mobile */
+
+      .hero-stats {
+        gap: 30px;
+      }
+
+      .stat-value {
+        font-size: 40px;
+      }
+
+      .problem-diagram {
+        flex-direction: column;
+      }
+
+      .arrow-icon {
+        transform: rotate(90deg);
+      }
+
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    /* Method Overview */
+    .method-visual {
+      margin: 48px 0;
+      text-align: center;
+    }
+
+    .method-visual img {
+      max-width: 100%;
+      border-radius: 20px;
+      box-shadow: 0 8px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Observation cards grid */
+    .observations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .observation-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+      transition: transform 0.3s ease;
+    }
+
+    .observation-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .observation-card img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .observation-card h4 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .observation-card p {
+      font-size: 15px;
+      color: var(--apple-gray);
+      margin-bottom: 16px;
+    }
+
+    .observation-insight {
+      background: var(--apple-light-gray);
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .observation-insight strong {
+      color: var(--apple-blue);
+    }
+
+    /* Interactive Demo Styling */
+    .demo-section {
+      text-align: center;
+    }
+
+    .demo-video {
+      margin: 48px 0;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .demo-video video {
+      width: 100%;
+      display: block;
+    }
+
+    /* Scroll to top */
+    .scroll-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--apple-blue);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 4px 20px rgba(0, 113, 227, 0.4);
+    }
+
+    .scroll-top:hover {
+      transform: translateY(-4px);
+    }
+
+
+/* Collapsed global navigation */
+
+/* Keep project tiles consistent with the team hub. */
