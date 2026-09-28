@@ -10,13 +10,13 @@ Derived from the workspace's `alpha_design_system` and approved C2C prototype.
 - Pill CTAs, softly rounded figures/cards, restrained shadows; no decorative stock imagery.
 - Scientific content remains precise and declarative; preserve the authors' claims and numbers.
 
-`shared/styles/tokens.css` is the maintained token source. The three research pages share `research.css`; all five share `components.css`. Project overrides load after shared primitives. Shared navigation and UI controls load last so each page has identical control styles. Modifier selectors such as `.section.section-dark` remain more specific than base selectors.
+`shared/styles/tokens.css` is the maintained token source. C2C, TaH, TaH2 and R2R share `research.css`; all project pages share `components.css`. Project overrides load after shared primitives. Shared navigation and UI controls load last so each page has identical control styles. Modifier selectors such as `.section.section-dark` remain more specific than base selectors.
 
 Navigation is entirely namespaced with `sp-` so Bulma and project-specific styles cannot change it. Its complete markup is generated at build time by `shared/navigation/render.mjs`, including in the Next.js hub. `controller.js` adds behavior without fetching a registry at runtime. The local copies in `shared/assets` make menu logos independent of old repository hosts.
 
 ## Navigation taxonomy and motion
 
-The global menu classifies projects by research mechanism: Compression (MoA, FrameFusion), Adaptivity Scaling (R2R, TaH), and Context Scaling (C2C). The hub's numbered routes are a separate conceptual axis; they do not change these project categories.
+The global menu classifies projects by research mechanism: Compression (MoA, FrameFusion), Adaptivity Scaling (R2R, TaH, TaH2), and Context Scaling (C2C). The hub's numbered routes are a separate conceptual axis; they do not change these project categories.
 
 The local **On this page** menu classifies sections by reading purpose, with labels defined once in `config/section-groups.json`:
 
@@ -30,10 +30,14 @@ At >=900px with a fine mouse pointer, On this page opens on hover without steali
 
 ## Shared controls
 
-`shared/ui/` owns the back-to-top button, citation card, CTA buttons and author pills. The shared renderer adds a 48px blue circle with the same outline chevron to the hub and all five papers. It appears after 500px of scrolling, stays 24px from desktop edges or 16px from mobile edges (respecting safe areas), and hides while a navigation menu is open. Entry/exit use opacity and an 8px translation; hover lifts 2px. Its keyboard action returns focus to Home after scrolling and clears the old section hash. Reduced-motion uses immediate scrolling. The hub's desktop mandatory scroll snapping retains its immediate return with a short snap suspension, preventing an in-flight anchor animation from landing on another chapter; this handling lives in the same shared controller.
+`shared/ui/` owns the footer, back-to-top button, citation card, CTA buttons and author pills. The shared renderer adds a 48px blue circle with the same outline chevron to the hub and all papers. It appears after 500px of scrolling, stays 24px from desktop edges or 16px from mobile edges (respecting safe areas), and hides while a navigation menu is open. Entry/exit use opacity and an 8px translation; hover lifts 2px. Its keyboard action returns focus to Home after scrolling and clears the old section hash. Reduced-motion uses immediate scrolling. The hub's desktop mandatory scroll snapping retains its immediate return with a short snap suspension, preventing an in-flight anchor animation from landing on another chapter; this handling lives in the same shared controller.
 
 Each paper stores its unchanged citation in `citation.bib`; `{{citation}}` renders one common card with a light header, 44px copy button and horizontally scrollable 13px monospace text. Copy success uses a checkmark and **Copied** for 2400ms; failure offers **Try again** and announces a manual-copy alternative. A failed legacy clipboard fallback must not report success. Paper/code links use the same 17px pill CTA treatment, and author tags use the same 14px text with at least a 44px target. Legacy Bulma controls inside scientific demos retain their own styles.
 
 ## Dependencies preserved during migration
 
 FrameFusion retains its legacy carousel / slider and Font Awesome runtime dependencies because its interactive demonstrations use them. Its project CSS already overrides the old template appearance. Other papers retain MathJax, PapaParse or their own scripts where needed. Migrating this code does not require rewriting working scientific demonstrations into React.
+
+## Shared footer
+
+The generator and hub use the same `renderFooter` in `shared/ui/render.mjs`. Site/team labels come from `config/site.json`; Home and All projects resolve through the configured base path. All pages use the same light-gray surface, 980px container, 13–14px type, 44px link targets and mobile stacking. Footer content must not be duplicated in project files. Remove visible legacy template credits, stale copyright years and repeated social icons; preserve project resource links in the research content. The shared footer remains a scroll-snap endpoint on the hub.

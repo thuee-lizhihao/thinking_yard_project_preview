@@ -48,9 +48,3 @@ html {
   opacity: 1;
   transform: translateY(0);
 }
-
-.footer {
-  padding: 60px 0;
-  background: var(--apple-black);
-  color: #fff;
-}

@@ -2,14 +2,14 @@ import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderNavigation } from '../shared/navigation/render.mjs';
-import { renderBackToTop, renderCitation } from '../shared/ui/render.mjs';
+import { renderBackToTop, renderCitation, renderFooter } from '../shared/ui/render.mjs';
 import { basePath, siteURL } from '../config/paths.mjs';
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const json = async path => JSON.parse(await readFile(resolve(root,path),'utf8'));
 const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export async function generate({clean = false} = {}) {
   const base = basePath();
-  const [projects,categories] = await Promise.all([json('config/projects.json'),json('config/categories.json')]);
+  const [projects,categories,site] = await Promise.all([json('config/projects.json'),json('config/categories.json'),json('config/site.json')]);
   const slugs = new Set();
   for (const p of projects) {
     if (!/^[a-z][a-z0-9-]*$/.test(p.slug) || slugs.has(p.slug)) throw new Error(`Invalid or duplicate project slug: ${p.slug}`);
@@ -47,6 +47,7 @@ ${head.replaceAll('{{base}}',base).replace(/<link[^>]+href="\.\/static\/css\/ind
 </head><body>
 ${nav}
 ${body.replaceAll('{{citation}}',renderCitation(bibtex))}
+${renderFooter({base,name:site.name,team:site.team})}
 ${renderBackToTop()}
 </body></html>\n`;
     await writeFile(resolve(output,'index.html'),html);

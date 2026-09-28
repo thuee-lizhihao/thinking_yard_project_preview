@@ -1025,9 +1025,7 @@ export default function Home() {
                 )}
                 {index === 2 && (
                   <div className="project-pills" aria-label="Route 2 projects">
-                    <ProjectLink name="R2R" />
-                    <ProjectLink name="MoA" />
-                    <ProjectLink name="FrameFusion" />
+                    {projectCards.filter(project => project.route === "02").map(project => <ProjectLink key={project.slug} name={project.name} />)}
                   </div>
                 )}
                 {index === 3 && (
@@ -1038,8 +1036,7 @@ export default function Home() {
                       <small>shared α and τ · max over 0 ≤ s ≤ p</small>
                     </div>
                     <div className="project-pills" aria-label="Route 3 projects">
-                      <ProjectLink name="TaH" />
-                      <ProjectLink name="C2C" />
+                      {projectCards.filter(project => project.route === "03").map(project => <ProjectLink key={project.slug} name={project.name} />)}
                     </div>
                   </>
                 )}
@@ -1090,12 +1087,6 @@ export default function Home() {
         </div>
       </section>
 
-      <footer>
-        <div className="footer-primary">
-          <strong>NICS-EFC Team</strong>
-          <span>Research projects. Three scaling routes. One frontier.</span>
-        </div>
-      </footer>
     </main>
   );
 }

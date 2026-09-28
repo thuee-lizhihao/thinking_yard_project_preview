@@ -12,3 +12,10 @@ export function renderCitation(bibtex) {
     <span class="sp-sr-only" role="status" data-copy-status></span>
   </div>`;
 }
+
+export function renderFooter({base = '', name = 'Scaling Paths', team = 'NICS-EFC'} = {}) {
+  return `<footer class="sp-footer"><div class="sp-footer-inner">
+    <div class="sp-footer-identity"><strong>${escape(team)}</strong><p>${escape(name)} · Research projects</p></div>
+    <nav class="sp-footer-links" aria-label="Footer"><a href="${escape(base)}/">Home</a><a href="${escape(base)}/#projects">All projects</a></nav>
+  </div></footer>`;
+}

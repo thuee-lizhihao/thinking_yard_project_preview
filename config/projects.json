@@ -16,6 +16,14 @@
     "logo": "shared/assets/tah.png"
   },
   {
+    "slug": "tah2",
+    "name": "TaH2",
+    "category": "adaptivity",
+    "route": "03",
+    "description": "Adaptive looped transformers for test-time scaling",
+    "logo": "shared/assets/tah2.png"
+  },
+  {
     "slug": "c2c",
     "name": "C2C",
     "category": "context",

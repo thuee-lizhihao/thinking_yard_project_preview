@@ -538,10 +538,6 @@
 
     /* Footer */
 
-    .footer-social a:hover {
-      background: var(--apple-blue);
-    }
-
     /* BibTeX */
 
     /* Animations */
@@ -589,11 +585,6 @@
 
       .arrow-icon {
         transform: rotate(90deg);
-      }
-
-      .footer-content {
-        flex-direction: column;
-        text-align: center;
       }
     }
 

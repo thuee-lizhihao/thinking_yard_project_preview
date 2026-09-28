@@ -7,10 +7,10 @@ This is the unified Thinking Yard / NICS-EFC research site. Work only in source 
 - Project names, descriptions, category membership, logos and routes: `config/projects.json`.
 - Category labels: `config/categories.json`.
 - All navigation markup, state and styling: `shared/navigation/`.
-- Back-to-top and citation markup/behavior, CTA and author-pill styling: `shared/ui/`. Do not reintroduce project-specific copies.
+- Footer, back-to-top and citation markup/behavior, CTA and author-pill styling: `shared/ui/`. Do not reintroduce project-specific copies.
 - Visual tokens: `shared/styles/tokens.css`; common components: `shared/styles/components.css` and `research.css`.
 - Read `docs/design-system.md` before broad visual changes.
-- A project contains `page.json`, `head.html`, `content.html`, `citation.bib`, and `static/`. Place exactly one `{{citation}}` slot in content.html. Do not duplicate navigation or embed another project registry in it.
+- A project contains `page.json`, `head.html`, `content.html`, `citation.bib`, and `static/`. Place exactly one `{{citation}}` slot in content.html. Do not duplicate navigation, footer or embed another project registry in it. The generator appends the shared footer automatically.
 
 ## Approved navigation
 
@@ -25,7 +25,7 @@ This is the unified Thinking Yard / NICS-EFC research site. Work only in source 
 
 ## Preservation and verification
 
-Preserve paper content, authors, figures, tables, video and project-specific interactions. In particular: C2C CSV filtering, R2R token demo/video, FrameFusion charts/video/CSV, MoA matrix interactions, and the hub's curve math.
+Preserve paper content, authors, figures, tables, video and project-specific interactions. In particular: C2C CSV filtering, R2R token demo/video, FrameFusion charts/video/CSV, MoA matrix interactions, TaH2 animated SVG charts/token-depth samples/model and batch selectors, and the hub's curve math.
 
 Run `npm run check` and `GITHUB_PAGES=true npm run build` for changes to shared rendering, configuration, or routing. Check desktop and mobile when changing visuals. The validator checks local resources and anchors; browser testing checks runtime data and layout. No deployment is needed for routine local changes unless requested.
 

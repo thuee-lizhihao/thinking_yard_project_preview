@@ -1394,55 +1394,6 @@ input[type="range"].slider,
 
 /* BibTeX and footer */
 
-.footer .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-}
-
-.footer-social {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.footer .icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 18px;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.footer .icon-link:hover {
-  background: var(--apple-blue);
-  transform: translateY(-2px);
-}
-
-.footer-content {
-  max-width: 760px;
-  text-align: center;
-}
-
-.footer-content p {
-  margin: 8px 0;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-content a {
-  color: rgba(255, 255, 255, 0.86);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 /* Authors */
 .authors-section {
   padding: 80px 0;

@@ -811,26 +811,6 @@
 
 /* Footer */
 
-.footer-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.footer-text a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.footer-text a:hover {
-  color: #fff;
-}
-
-.footer-social a:hover {
-  background: var(--apple-blue);
-  transform: translateY(-2px);
-}
-
 /* Scroll to top button */
 
 /* Responsive */

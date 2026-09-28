@@ -1,10 +1,10 @@
 # Thinking Yard · Project Pages
 
-NICS-EFC 的研究主页与五个项目页面，一套共享导航，一个构建入口。
+NICS-EFC 的研究主页与各项目页面，一套共享导航，一个构建入口。
 
 - 仓库：<https://github.com/fuvty/thinking_yard_project_page>
 - 站点：<https://fuvty.github.io/thinking_yard_project_page/>
-- 项目：C2C、TaH、R2R、FrameFusion、MoA
+- 项目：C2C、TaH、TaH2、R2R、FrameFusion、MoA
 
 ## 开始使用
 
@@ -47,14 +47,14 @@ projects/
     content.html        正文与项目专属演示代码
     citation.bib        原始引用；正文用 {{citation}} 引入共享卡片
     static/             本项目图片、视频、CSV、CSS、JS
-  tah/ r2r/ framefusion/ moa/
+  tah/ tah2/ r2r/ framefusion/ moa/
 shared/
   navigation/
     render.mjs          唯一的导航 HTML 渲染器，主页和所有项目共用
     controller.js       唯一的悬停、点击、键盘、滚动状态实现
     styles.css          唯一的导航布局、字号和动画
   ui/
-    render.mjs          回到顶部按钮与引用卡片的唯一模板
+    render.mjs          页尾、回到顶部按钮与引用卡片的唯一模板
     controller.js       滚动、复制、成功/失败反馈
     styles.css          回到顶部、复制、论文按钮和作者标签
   styles/
@@ -75,7 +75,7 @@ out/                    最终静态网站，勿编辑、不提交
 | 要修改的内容 | 修改位置 |
 | --- | --- |
 | 顶栏、菜单、hover、手机交互 | `shared/navigation/`，所有页面同时更新 |
-| 回到顶部、复制引用、论文按钮、作者标签 | `shared/ui/` |
+| 页尾、回到顶部、复制引用、论文按钮、作者标签 | `shared/ui/` |
 | 引用内容 | `projects/<slug>/citation.bib` |
 | 项目名称、介绍、logo 或分类 | `config/projects.json`，导航和主页卡片同时更新 |
 | 某个项目的章节目录 | `projects/<slug>/page.json` 中的 `sections` |
@@ -98,6 +98,8 @@ out/                    最终静态网站，勿编辑、不提交
 
 ### 公共控件
 
+所有页面（包括主页）的页尾由 `shared/ui/render.mjs` 自动生成，团队名和站点名读取 `config/site.json`。统一显示团队信息、Home 和 All projects，使用浅灰背景、13–14px 字号及 44px 点击区域。项目正文不要再写 `<footer>`，也不要添加模板署名、旧年份或重复社交图标。论文与代码等资源保留在正文中。
+
 所有页面（包括主页）共用 48px 的蓝色回到顶部按钮。按钮在滚动 500px 后出现，桌面距边缘 24px，手机 16px 并兼容安全区；目录展开时暂时隐藏。键盘返回顶部后会恢复 Home 焦点，减少动画偏好下立即返回。
 
 引用卡片由 `{{citation}}` 和本项目的 `citation.bib` 构建；不要再单独编写复制按钮或复制脚本。所有页面使用相同的 Copy BibTeX → Copied 反馈，并处理剪贴板失败。论文/代码 CTA 与作者标签也统一在 `shared/ui/styles.css` 中，项目 CSS 不再重复定义这些组件。
@@ -112,9 +114,9 @@ npm run new:project -- my-project "My Project" context
 
 1. 创建 `projects/my-project/`，包含正文骨架、元数据、CSS 和 JS。
 2. 在 `config/projects.json` 登记项目。
-3. 让项目自动出现在全站导航和主页项目卡片中。
+3. 让项目自动出现在全站导航、主页项目卡片和对应研究路线中。
 
-然后填入研究内容、真实项目介绍、logo 与 `route`（`02` 或 `03`），运行 `npm run check` 和 `npm run build`。无需修改其他五个页面，也无需编辑发布工作流。
+然后填入研究内容、真实项目介绍、logo 与 `route`（`02` 或 `03`），运行 `npm run check` 和 `npm run build`。无需修改其他项目页面，也无需编辑发布工作流。
 
 ## 发布与路径
 
@@ -137,6 +139,7 @@ GITHUB_PAGES=true npm run preview
 | 总览 | `/` |
 | C2C | `/projects/c2c/` |
 | TaH | `/projects/tah/` |
+| TaH2 | `/projects/tah2/` |
 | R2R | `/projects/r2r/` |
 | FrameFusion | `/projects/framefusion/` |
 | MoA | `/projects/moa/` |

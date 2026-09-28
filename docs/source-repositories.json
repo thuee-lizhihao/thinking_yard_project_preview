@@ -34,5 +34,13 @@
     "repository": "https://github.com/fuvty/scaling_proj_page.git",
     "sourceCommit": "953473ebb368502cca9c6444f18c467270947d5e",
     "includesLocalEdits": true
+  },
+  {
+    "project": "tah2",
+    "sourceDirectory": "../tah2-project-page",
+    "repository": null,
+    "sourceCommit": null,
+    "includesLocalEdits": true,
+    "notes": "Imported from a local directory without Git metadata. Original README preserved in projects/tah2/SOURCE-README.md; scientific data and paper/figure assets preserved unchanged."
   }
 ]

@@ -376,34 +376,6 @@ a {
   color: var(--muted);
 }
 
-footer {
-  align-items: end;
-  background: #fff;
-  border-top: 1px solid var(--line);
-  display: grid;
-  gap: 32px;
-  grid-template-columns: 1fr;
-  min-height: 112px;
-  padding: 28px clamp(24px, 5vw, 72px);
-  scroll-snap-align: end;
-  scroll-snap-stop: always;
-}
-
-.footer-primary {
-  display: grid;
-  gap: 3px;
-}
-
-.footer-primary strong {
-  font-size: 14px;
-  font-weight: 620;
-}
-
-.footer-primary span {
-  color: var(--muted);
-  font-size: 11px;
-}
-
 /* Projects section */
 .projects-section {
   align-items: center;
@@ -656,11 +628,6 @@ footer {
   .story-step.is-active .story-copy {
     transform: translateY(0);
   }
-
-  footer {
-    scroll-snap-align: none;
-    scroll-snap-stop: normal;
-  }
 }
 
 @media (hover: none) {
@@ -705,10 +672,6 @@ footer {
   .project-pills,
   .variable-row {
     margin-top: 18px;
-  }
-
-  footer {
-    align-items: start;
   }
 }
 

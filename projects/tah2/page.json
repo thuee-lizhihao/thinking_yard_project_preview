@@ -1,0 +1,61 @@
+{
+  "title": "TaH2 \u00b7 Improving Test-Time Scaling with Adaptive Looped Transformers",
+  "description": "TaH2 learns which tokens benefit from more computation using adaptive looped transformers and lookahead depth supervision.",
+  "theme": "research",
+  "sections": [
+    {
+      "id": "insight",
+      "label": "Key insight",
+      "group": "research",
+      "description": "Adaptive depth and scaling"
+    },
+    {
+      "id": "tokens",
+      "label": "Motivation",
+      "group": "research",
+      "description": "The gain from another iteration"
+    },
+    {
+      "id": "method",
+      "label": "Method",
+      "group": "research",
+      "description": "Lookahead depth supervision"
+    },
+    {
+      "id": "results",
+      "label": "Results",
+      "group": "evaluation",
+      "description": "Scaling trends and training loss"
+    },
+    {
+      "id": "runtime-figure",
+      "label": "Serving latency",
+      "group": "evaluation",
+      "description": "Measured wall-clock efficiency"
+    },
+    {
+      "id": "depth-figure",
+      "label": "Token-level depth",
+      "group": "evaluation",
+      "description": "Adaptive depth in three responses"
+    },
+    {
+      "id": "generalization",
+      "label": "Generalization",
+      "group": "evaluation",
+      "description": "Tasks and model scales"
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "group": "resources",
+      "description": "Authors and affiliations"
+    },
+    {
+      "id": "citation",
+      "label": "Citation",
+      "group": "resources",
+      "description": "Paper reference and BibTeX"
+    }
+  ]
+}
