@@ -330,7 +330,6 @@ img,svg{max-width:100%}
 body { overflow-x: clip; }
 main { padding-top: 0; }
 .hero { min-height: 100svh; padding: 100px 24px 80px; }
-.hero .section-eyebrow { margin-bottom: 16px; }
 .hero-tagline { margin-top: 12px; }
 .hero-metrics { margin: 8px auto 40px; }
 .hero-metrics strong { font-weight: 600; }
@@ -369,3 +368,19 @@ figure[id] { scroll-margin-top: 76px; }
 @media (prefers-reduced-motion:reduce) {
   .method-principles > div { transition: none; }
 }
+
+/* Iteration-gain field: keep the research foreground quiet and readable. */
+.hero { isolation: isolate; overflow: hidden; }
+.iteration-field, .iteration-field-veil { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.iteration-field-veil { background: radial-gradient(ellipse 48% 65% at 50% 47%, rgba(255,255,255,.97) 0%, rgba(255,255,255,.92) 40%, rgba(255,255,255,.2) 85%, rgba(255,255,255,0) 100%); }
+.hero-copy, .hero-metrics, .hero-actions { position: relative; z-index: 1; }
+@media (max-width: 768px) {
+  .iteration-field-veil { background: radial-gradient(ellipse 62% 62% at 50% 49%, rgba(255,255,255,.96) 0%, rgba(255,255,255,.86) 50%, rgba(255,255,255,.2) 100%); }
+}
+
+/* Native video controls keep playback and fullscreen available on touch devices. */
+.demo-section { background: var(--apple-light-gray); }
+.demo-player { width: 100%; max-width: 764px; margin: 0 auto; }
+.demo-player video { display: block; width: 100%; height: auto; aspect-ratio: 764 / 504; border-radius: 16px; background: #fff; box-shadow: 0 2px 20px rgba(0,0,0,.06); }
+.demo-player video:focus-visible { outline: 2px solid var(--apple-blue); outline-offset: 4px; }
+.demo-player figcaption { margin-top: 16px; color: var(--apple-gray); font-size: 14px; line-height: 1.5; text-align: center; }

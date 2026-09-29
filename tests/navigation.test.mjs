@@ -9,7 +9,7 @@ function navigation({wide=true,fine=true}={}) {
  class Element {
   constructor(){this.events={};this.attrs={};this.dataset={};this.hidden=false;const names=new Set();this.classList={add:n=>names.add(n),remove:n=>names.delete(n),contains:n=>names.has(n),toggle:(n,on)=>on?names.add(n):names.delete(n)};}
   addEventListener(name,fn){(this.events[name]??=[]).push(fn);}
-  emit(name,extra={}){for(const fn of this.events[name]??[])fn({pointerType:'mouse',preventDefault(){},...extra});}
+  emit(name,extra={}){for(const fn of this.events[name]??[])fn({pointerType:'mouse',detail:0,preventDefault(){},...extra});}
   setAttribute(k,v){this.attrs[k]=v;}getAttribute(k){return this.attrs[k];}
   focus(){document.activeElement=this;}contains(e){return e===this;}
  }
@@ -25,7 +25,7 @@ function navigation({wide=true,fine=true}={}) {
  document=new Element();document.body=new Element();document.activeElement=home;document.getElementById=id=>ids[id];
  const desktop=new Element();desktop.matches=wide;
  const hover=new Element();hover.matches=fine;
- const window=new Element();window.scrollY=0;window.matchMedia=q=>q.includes('min-width')?desktop:hover;window.setTimeout=f=>{timers.set(++timerId,f);return timerId;};window.clearTimeout=id=>timers.delete(id);
+ const window=new Element();window.scrollY=0;window.innerWidth=wide?1200:390;window.innerHeight=844;window.matchMedia=q=>q.includes('min-width')?desktop:hover;window.setTimeout=f=>{timers.set(++timerId,f);return timerId;};window.clearTimeout=id=>timers.delete(id);
  vm.runInNewContext(script,{window,document});
  return {ids,categories,groups,links,home,chapter,document,window,desktop,hover,flush:()=>{const callbacks=[...timers.values()];timers.clear();callbacks.forEach(fn=>fn());},pending:()=>timers.size>0};
 }
@@ -79,4 +79,27 @@ test('contents close on chapter selection and outside click without trapping foc
  n.ids.mobileMenuToggle.emit('click');n.ids.navLinks.emit('click',{target:{closest:()=>n.chapter}});assert(n.ids.navLinks.inert);
  n.ids.mobileMenuToggle.emit('pointerenter');n.document.emit('click',{target:n.home});assert(n.ids.navLinks.inert);
  n.ids.mobileMenuToggle.emit('pointerenter');n.ids.mobileMenuToggle.emit('pointerleave');n.hover.emit('change');assert(!n.pending());assert(n.ids.navLinks.inert);
+});
+
+test('mobile contents survive browser toolbar height changes and keep tap toggling reliable',()=>{
+ const n=navigation({wide:false,fine:false});n.window.scrollY=200;n.window.emit('scroll');
+ const trigger=n.ids.mobileMenuToggle,panel=n.ids.navLinks;
+ trigger.emit('click',{pointerType:'touch',detail:1});assert(!panel.inert);
+ n.window.innerHeight=750;n.window.emit('resize');
+ assert(!panel.inert,'collapsing browser chrome must not dismiss the menu');
+ assert.equal(trigger.attrs['aria-expanded'],'true');
+ trigger.emit('click',{pointerType:'touch',detail:1});assert(panel.inert);
+ trigger.emit('click',{pointerType:'touch',detail:1});assert(!panel.inert);
+ n.window.innerWidth=430;n.window.emit('resize');assert(panel.inert,'width changes still reset the layout');
+});
+test('touch opening does not move focus and a null focusout does not dismiss contents',()=>{
+ const n=navigation({wide:false,fine:false});n.window.scrollY=200;n.window.emit('scroll');
+ const trigger=n.ids.mobileMenuToggle,panel=n.ids.navLinks;
+ n.document.activeElement=trigger;
+ trigger.emit('click',{pointerType:'touch',detail:1});
+ assert.equal(n.document.activeElement,trigger,'a tap must not force focus to the first chapter');
+ n.ids.navLocal.emit('focusout',{relatedTarget:null});assert(!panel.inert);
+ n.document.emit('click',{target:n.home});assert(panel.inert,'outside taps still dismiss');
+ trigger.emit('keydown',{key:'ArrowDown'});assert.equal(n.document.activeElement,n.chapter);
+ n.ids.navLocal.emit('focusout',{relatedTarget:n.home});assert(panel.inert,'keyboard focus leaving still dismisses');
 });

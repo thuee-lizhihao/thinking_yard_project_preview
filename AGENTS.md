@@ -5,7 +5,7 @@ This is the unified Thinking Yard / NICS-EFC research site. Work only in source 
 ## Single sources of truth
 
 - Project names, descriptions, category membership, logos and routes: `config/projects.json`.
-- Category labels: `config/categories.json`.
+- Category labels and order: `config/categories.json` — Adaptivity Scaling, Context Scaling, Model Compression.
 - All navigation markup, state and styling: `shared/navigation/`.
 - Footer, back-to-top and citation markup/behavior, CTA and author-pill styling: `shared/ui/`. Do not reintroduce project-specific copies.
 - Visual tokens: `shared/styles/tokens.css`; common components: `shared/styles/components.css` and `research.css`.
