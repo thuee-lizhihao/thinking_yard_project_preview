@@ -1,0 +1,49 @@
+{
+  "title": "AKV · Cache Engineering for Agents",
+  "description": "AKV gives agents direct control over their KV cache, reusing retained states to reduce cost and improve long-horizon task performance.",
+  "theme": "research",
+  "sections": [
+    {
+      "id": "overview",
+      "label": "Cache engineering",
+      "group": "research",
+      "description": "Why retained states matter"
+    },
+    {
+      "id": "system",
+      "label": "Serving design",
+      "group": "research",
+      "description": "Cache operations, reuse, and restoration"
+    },
+    {
+      "id": "efficiency",
+      "label": "Serving efficiency",
+      "group": "evaluation",
+      "description": "More solved tasks with fewer GPU hours"
+    },
+    {
+      "id": "results",
+      "label": "Benchmarks",
+      "group": "evaluation",
+      "description": "Three models, four agent workloads"
+    },
+    {
+      "id": "strategies",
+      "label": "Policy learning",
+      "group": "evaluation",
+      "description": "From rolling drop to agent-designed policies"
+    },
+    {
+      "id": "team",
+      "label": "Team",
+      "group": "resources",
+      "description": "Project team and resources"
+    },
+    {
+      "id": "citation",
+      "label": "Citation",
+      "group": "resources",
+      "description": "Publication details forthcoming"
+    }
+  ]
+}

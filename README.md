@@ -4,7 +4,7 @@ NICS-EFC 的研究主页与各项目页面，一套共享导航，一个构建�
 
 - 仓库：<https://github.com/fuvty/thinking_yard_project_page>
 - 站点：<https://fuvty.github.io/thinking_yard_project_page/>
-- 项目：C2C、TaH、TaH2、R2R、FrameFusion、MoA
+- 项目：C2C、TaH、TaH2、R2R、FrameFusion、MoA、AKV
 
 ## 开始使用
 
@@ -143,6 +143,7 @@ GITHUB_PAGES=true npm run preview
 | R2R | `/projects/r2r/` |
 | FrameFusion | `/projects/framefusion/` |
 | MoA | `/projects/moa/` |
+| AKV | `/projects/akv/` |
 
 ## 迁移说明
 

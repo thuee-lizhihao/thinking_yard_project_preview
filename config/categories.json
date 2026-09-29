@@ -15,6 +15,6 @@
     "id": "context",
     "label": "Context Scaling",
     "shortLabel": "Context",
-    "description": "Scale what models can exchange beyond text-only communication."
+    "description": "Scale how models retain, manage, and exchange context."
   }
 ]
