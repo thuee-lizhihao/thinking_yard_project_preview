@@ -20,7 +20,7 @@ The core comparison figure stays visible in the overview, followed by the option
 
 ## Hero cache flow
 
-`static/js/hero-flow.js` draws a decorative, schematic history/KV flow in paired rows behind the hero. A 12-second cycle appends new messages and states, drops selected KV only, repositions retained states, and continues generation. Internal patterns retain their identities. The logical-history viewport advances at the end of each cycle; it does not delete messages. Repositioning is illustrated through compact positional indices, not a physical-memory layout.
+`static/js/hero-flow.js` draws a decorative, schematic history/KV flow in paired rows behind the hero. A 12-second cycle appends new messages and states, drops selected KV only, repositions retained states, and continues generation. Internal patterns retain their identities. The logical-history viewport advances at the end of each cycle; it does not delete messages. The background uses a muted neutral-gray palette and contains no labels or numeric indices. Repositioning is illustrated by the movement of retained blocks, not a physical-memory layout.
 
 Clicking a background KV segment fades out its nearby states while the message history remains unchanged. Hovering gently emphasizes the target segment. The background pauses outside the hero and in hidden tabs; there is no pause button. Reduced-motion users get a static post-reposition snapshot. Rendering is capped at 30 fps and device pixel ratio 2. The central fade keeps the title, copy, metrics, and links readable. No simulated performance numbers are displayed.
 
