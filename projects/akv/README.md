@@ -14,7 +14,7 @@ First local draft, added to the shared project registry under Context Scaling / 
 
 ## Page narrative
 
-The page introduces the idea before the evidence: cache engineering → serving design → serving replay → benchmark evidence → policy learning. The hero retains three headline metrics and emphasizes only “Cache Engineering.”
+The page introduces the idea before the evidence: cache engineering → serving design → serving replay → benchmark evidence → policy learning. The hero uses the shared full-viewport layout, a text-only project title, one subtitle, and three headline metrics. The logo is reserved for project menus, hub cards, and the favicon. Navigation, footer, back-to-top, and citation controls come from the shared site components; do not add local copies.
 
 The core comparison figure stays visible in the overview, followed by the optional append / drop / reposition demo at `#method`. Below the three **Serving Design** contributions, the radix-tree explainer and full token-prefix explanation appear as two adjacent disclosures. Both start collapsed; the radix-tree disclosure retains the `#radix-tree` anchor. That chapter explains the history-dependence challenge and the reuse / eviction / restoration contributions. The GPU-hour replay remains a separate experiment section. API request JSON and parameter grammar are omitted; repeated overview and rolling-drop explanations are condensed.
 
