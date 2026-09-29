@@ -20,7 +20,7 @@
     "name": "TaH2",
     "category": "adaptivity",
     "route": "03",
-    "description": "Adaptive looped transformers for test-time scaling",
+    "description": "Better test-time scaling for looped models",
     "logo": "shared/assets/tah2.png"
   },
   {
