@@ -19,3 +19,7 @@ The original `static/js/data.js`, paper, PDF figures and scientific SVGs were co
 The architecture diagram and nine-benchmark figure scroll horizontally on narrow screens to keep labels legible. Other charts stack within the page width.
 
 From the repository root, run `npm run check` and `GITHUB_PAGES=true npm run build`; then `GITHUB_PAGES=true npm run preview`. Check desktop/mobile layout and model, batch, animation, citation and navigation controls after changes.
+
+## Hero background
+
+`static/js/hero-iterations.js` draws a decorative field of iteration trials: points grow branches away from their parent paths. Some trials retract to their origins; others keep extending along the new branch without merging back. Each trial starts at the exact endpoint of the preceding one. Accepted branch displacement carries forward, and particles restart only beyond the viewport edges. The canvas starts empty: paths are drawn only up to the moving tip, and completed trails fade over 24 seconds. No full guide lines or unvisited nodes are prepainted. These paths illustrate the idea and are not experimental data. The canvas sits behind a central white veil and never intercepts links. It pauses offscreen or in a hidden tab, caps pixel density and frame rate, and uses a static composition for reduced-motion preferences. Its styling lives at the end of the project stylesheet.
