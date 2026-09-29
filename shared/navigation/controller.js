@@ -28,7 +28,7 @@
       contents.inert = true;
       contents.setAttribute('aria-hidden', 'true');
       contentsToggle.setAttribute('aria-expanded', 'false');
-      if (restoreFocus) contentsToggle.focus();
+      if (restoreFocus) contentsToggle.focus({ preventScroll: true });
     };
     const closeProjects = (restoreFocus = false) => {
       cancelHoverClose();
@@ -91,10 +91,10 @@
     });
     menu.addEventListener('pointerenter', cancelHoverClose);
     menu.addEventListener('pointerleave', scheduleHoverClose);
-    const openContents = (focusMenu = true) => {
+    const openContents = (focusMenu = true, byHover = false) => {
       cancelContentsClose();
       closeProjects();
-      contentsOpenedByHover = !focusMenu;
+      contentsOpenedByHover = byHover;
       contents.inert = false;
       contents.setAttribute('aria-hidden', 'false');
       contents.classList.add('mobile-open');
@@ -111,7 +111,7 @@
     contentsToggle.addEventListener('pointerenter', event => {
       if (!isDesktopMouse(event)) return;
       cancelContentsClose();
-      if (!contents.classList.contains('mobile-open')) openContents(false);
+      if (!contents.classList.contains('mobile-open')) openContents(false, true);
     });
     contentsToggle.addEventListener('pointerleave', scheduleContentsClose);
     contents.addEventListener('pointerenter', cancelContentsClose);
@@ -122,9 +122,11 @@
         openContents();
       }
     });
-    contentsToggle.addEventListener('click', () => {
-      if (contents.classList.contains('mobile-open') && !contentsOpenedByHover) closeContents(true);
-      else openContents();
+    contentsToggle.addEventListener('click', event => {
+      // Pointer taps keep their focus; keyboard/assistive activation enters the menu.
+      const keyboardActivation = event.detail === 0;
+      if (contents.classList.contains('mobile-open') && !contentsOpenedByHover) closeContents(keyboardActivation);
+      else openContents(keyboardActivation);
     });
     backdrop.addEventListener('click', () => closeProjects(true));
     menu.addEventListener('click', event => {
@@ -155,7 +157,9 @@
       }
     });
     localNav.addEventListener('focusout', event => {
-      if (!localNav.contains(event.relatedTarget)) closeContents();
+      // Mobile browsers can blur a tapped control without focusing another element.
+      // Outside clicks are handled above; only an actual focus destination dismisses here.
+      if (event.relatedTarget && !localNav.contains(event.relatedTarget)) closeContents();
     });
     const updateNavigation = () => {
       const scrolled = window.scrollY > 8;
@@ -167,7 +171,16 @@
       if (!scrolled) closeContents();
     };
     window.addEventListener('scroll', updateNavigation, { passive: true });
-    window.addEventListener('resize', () => { closeContents(); updateNavigation(); });
+    let viewportWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+      // Mobile browser chrome changes viewport height during scroll and taps.
+      // CSS adapts the panel height; preserve its open state until the width changes.
+      if (window.innerWidth !== viewportWidth) {
+        viewportWidth = window.innerWidth;
+        closeContents();
+      }
+      updateNavigation();
+    });
     updateNavigation();
     desktop.addEventListener('change', () => { closeProjects(); closeContents(); });
     hoverCapable.addEventListener('change', () => { closeProjects(); closeContents(); });

@@ -1,5 +1,5 @@
 {
-  "title": "TaH2 \u00b7 Improving Test-Time Scaling with Adaptive Looped Transformers",
+  "title": "TaH2 · Improving Test-Time Scaling with Adaptive Looped Transformers",
   "description": "TaH2 learns which tokens benefit from more computation using adaptive looped transformers and lookahead depth supervision.",
   "theme": "research",
   "sections": [
@@ -20,6 +20,12 @@
       "label": "Method",
       "group": "research",
       "description": "Lookahead depth supervision"
+    },
+    {
+      "id": "demo",
+      "label": "Demo",
+      "group": "research",
+      "description": "Live token-level iteration trace"
     },
     {
       "id": "results",

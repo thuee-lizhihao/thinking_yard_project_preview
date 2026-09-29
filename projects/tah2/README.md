@@ -23,3 +23,9 @@ From the repository root, run `npm run check` and `GITHUB_PAGES=true npm run bui
 ## Hero background
 
 `static/js/hero-iterations.js` draws a decorative field of iteration trials: points grow branches away from their parent paths. Some trials retract to their origins; others keep extending along the new branch without merging back. Each trial starts at the exact endpoint of the preceding one. Accepted branch displacement carries forward, and particles restart only beyond the viewport edges. The canvas starts empty: paths are drawn only up to the moving tip, and completed trails fade over 24 seconds. No full guide lines or unvisited nodes are prepainted. These paths illustrate the idea and are not experimental data. The canvas sits behind a central white veil and never intercepts links. It pauses offscreen or in a hidden tab, caps pixel density and frame rate, and uses a static composition for reduced-motion preferences. Its styling lives at the end of the project stylesheet.
+
+## Demo video
+
+`static/videos/tah2-demo.mp4` is a lossless MP4 remux of the supplied `demo.qt` (29.4 seconds, 764 × 504, H.264 video and AAC audio). Both media streams are preserved, with MP4 metadata moved to the front for progressive playback. `tah2-demo-poster.jpg` is extracted at 22 seconds. The Method section is followed by a Demo section, linked from the hero and the shared contents menu. The native player uses `controls`, `playsinline` and `preload="none"`; playback starts only on user interaction.
+
+To replace the video: `ffmpeg -i demo.qt -map 0:v:0 -map '0:a?' -c copy -map_metadata -1 -movflags +faststart static/videos/tah2-demo.mp4`. Regenerate the poster from the replacement video and update the intrinsic width/height and CSS aspect ratio if its dimensions change.
