@@ -122,23 +122,23 @@ npm run new:project -- my-project "My Project" context
 
 ### 独立 GitHub Pages 预览
 
-正式仓库和预览仓库独立部署，正式站的 `main` 与工作流不需要修改。
+正式仓库和公开预览仓库独立部署，正式站的 `main` 与工作流不需要修改。预览仓库公开源码和 Git 历史。
 
-- 源码仓库 `origin`：`https://github.com/fuvty/thinking_yard_project_page.git`
-- 公开网页仓库：`https://github.com/thuee-lizhihao/thinking_yard_project_preview.git`（仅生成文件）
-- 开发分支：`preview/akv-project-page`（源码与发布仓库分支同名，但提交历史独立）
+- 正式仓库 `production`：`https://github.com/fuvty/thinking_yard_project_page.git`
+- 预览源码仓库 `origin`：`https://github.com/thuee-lizhihao/thinking_yard_project_preview.git`
+- 开发分支：`preview/akv-project-page`，默认跟踪预览源码仓库中的同名分支
 - 预览首页：<https://thuee-lizhihao.github.io/thinking_yard_project_preview/>
 - AKV 预览：<https://thuee-lizhihao.github.io/thinking_yard_project_preview/projects/akv/>
 
-日常修改后先提交，再执行以下发布命令。命令要求工作区干净，运行检查和预览路径构建，推送源码到原私有仓库，然后只将 `out/` 中的网页发布到独立公开仓库。GitHub Pages 部署成功后，固定网址更新。
+日常修改后先提交，再推送到预览仓库。GitHub Actions 自动运行检查和构建，然后发布网页；部署成功后固定网址更新。
 
 ```sh
-npm run publish:preview
+git push origin preview/akv-project-page
 ```
 
-电脑需配置有权推送两个仓库的 GitHub 登录。预览仓库的 Pages 从 `preview/akv-project-page` 分支的根目录发布，`.nojekyll` 保留静态资源。不要把源码分支直接推送到公开网页仓库。
+预览仓库需启用 Pages 的 GitHub Actions 构建，并允许 `preview/akv-project-page` 部署到 `github-pages` 环境。`.github/workflows/preview.yml` 仅在指定预览仓库和分支生效，构建路径与站点来源读取该仓库的 Pages 配置。
 
-构建在开发电脑执行；GitHub 接收生成文件后发布，所以仅推送源码不自动更新预览。源码和历史保留在原私有仓库；公开仓库只有 HTML、浏览器端脚本、样式、图片、视频等网站文件。预览内容默认公开，noindex 不是访问控制。`deployment.json` 可核对线上对应的源码提交。此配置目前提供一个 AKV 开发预览站，其他分支不会覆盖它。
+推送完成后，构建与部署由 GitHub 执行，不依赖开发电脑继续在线。不再向正式仓库的预览分支同步；正式站更新需另行明确操作。预览默认公开，noindex 不是访问控制。`deployment.json` 可核对线上对应的源码提交。此配置目前提供一个 AKV 开发预览站，其他分支不会覆盖它。
 
 ### 正式站
 
