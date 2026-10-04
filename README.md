@@ -144,7 +144,7 @@ git push origin preview/akv-project-page
 
 推送到 `main` 后，GitHub Actions 自动检查、构建并发布整个网站。PR 只检查与构建，不发布。
 
-仓库保持私有；Pages 网站公开可访问。GitHub 已启用 `build_type: workflow`。
+正式仓库保持私有；独立预览仓库公开源码与历史。两个 Pages 网站均公开可访问，并使用 `build_type: workflow`。
 
 GitHub Pages 构建使用 `GITHUB_PAGES=true`，读取 `config/site.json` 的 `basePath`。本地默认不加前缀。完整模拟线上路径：
 
