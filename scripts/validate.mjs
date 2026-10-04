@@ -1,12 +1,12 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { resolve, relative, dirname, extname } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 import { parse } from 'parse5';
 import { basePath } from '../config/paths.mjs';
 export async function validate(directory='public') {
   const root=resolve(directory), base=basePath(), errors=[], htmlFiles=[], scripts=[], stylesheets=new Set();
-  async function walk(dir) { for(const entry of await readdir(dir,{withFileTypes:true})) {const file=resolve(dir,entry.name);if(entry.isDirectory())await walk(file);else if(entry.name.endsWith('.html'))htmlFiles.push(file);else if(entry.name.endsWith('.js')&&!relative(root,file).startsWith('_next/'))scripts.push(file);} }
+  async function walk(dir) { for(const entry of await readdir(dir,{withFileTypes:true})) {const file=resolve(dir,entry.name);if(entry.isDirectory())await walk(file);else if(entry.name.endsWith('.html'))htmlFiles.push(file);else if(entry.name.endsWith('.js')&&!relative(root,file).replaceAll('\\','/').startsWith('_next/'))scripts.push(file);} }
   await walk(root);
   const exists=async file=>!!await stat(file).catch(()=>null);
   let references=0;
@@ -40,7 +40,8 @@ export async function validate(directory='public') {
   for(const file of scripts){
     const source=await readFile(file,'utf8');
     try{new Script(source);}catch(e){errors.push(`${relative(root,file)}: ${e.message}`);}
-    const projectRoot=file.includes('/static/')?file.split('/static/')[0]:dirname(file);
+    const normalized=file.replaceAll('\\','/');
+    const projectRoot=normalized.includes('/static/')?normalized.split('/static/')[0]:dirname(file);
     for(const match of source.matchAll(/fetch\(\s*['"](\.\/?[^'"]+)['"]/g)) {
       if(!await exists(resolve(projectRoot,match[1])))errors.push(`${relative(root,file)}: missing data ${match[1]}`);
     }
@@ -49,7 +50,7 @@ export async function validate(directory='public') {
     const source=await readFile(file,'utf8');
     for(const match of source.matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)) {
       const ref=match[1];if(/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(ref))continue;
-      const url=new URL(ref,pathToFileURL(file));const target=decodeURIComponent(url.pathname);
+      const url=new URL(ref,pathToFileURL(file));const target=fileURLToPath(url);
       references++;
       if(!await exists(target))errors.push(`${relative(root,file)}: missing CSS asset ${ref}`);
     }

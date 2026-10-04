@@ -1,6 +1,6 @@
 # AKV · Cache Engineering for Agents
 
-First local draft, added to the shared project registry under Context Scaling / Route 03.
+Registered under Context Scaling / Route 03. The content revision follows the supplied `main.pdf`, retaining the original visual theme.
 
 ## Content sources
 
@@ -14,9 +14,13 @@ First local draft, added to the shared project registry under Context Scaling / 
 
 ## Page narrative
 
-The page introduces the idea before the evidence: cache engineering → serving design → serving replay → benchmark evidence → policy learning. The hero uses the shared full-viewport layout, a text-only project title, one subtitle, and three headline metrics. The logo is reserved for project menus, hub cards, and the favicon. Navigation, footer, back-to-top, and citation controls come from the shared site components; do not add local copies.
+The page distinguishes cache engineering (operations), AKV serving (interface and state management), and cache policies (RSI). Reading order: context/cache comparison → three operations → interface and drop-aware radix tree → benchmarks → GPU-budget experiment and serving measurements → RSI. The hero retains the full-viewport layout, text-only title, subtitle and three headline metrics. The logo remains in menus, hub cards and the favicon. Navigation, footer, back-to-top and citation controls stay shared.
 
-The core comparison figure stays visible in the overview, followed by the optional append / drop / reposition demo at `#method`. Below the three **Serving Design** contributions, the radix-tree explainer and full token-prefix explanation appear as two adjacent disclosures. Both start collapsed; the radix-tree disclosure retains the `#radix-tree` anchor. That chapter explains the history-dependence challenge and the reuse / eviction / restoration contributions. The GPU-hour replay remains a separate experiment section. API request JSON and parameter grammar are omitted; repeated overview and rolling-drop explanations are condensed.
+The overview follows the Introduction and keeps Figure 1 visible. Figures 2 and 3 are supplementary observations in one collapsed disclosure: `attention-history.svg` and `accuracy-cost.svg` are conversions of `bcp_attention_distance_request37_mean10.pdf` and `pareto_frontier.pdf`. The three-operation demo at `#method` is always visible, with Drop selected initially. Append and Repos have brief explanations; there is no separate reposition motivation or ablation chapter.
+
+The serving section foregrounds the stateless interface and drop-aware radix tree. The simplified tree at `#radix-tree` is visible. The full Figure 5, eviction, position-aware reuse and one-pass restoration are grouped in a collapsed implementation disclosure. API JSON and parameter grammar remain omitted.
+
+Evaluation starts with the definitions of Standard (96K summarization), Text Engineering (48K summarization) and AKV (retain the latest 12 tool responses’ KV). Table 1 is presented through the existing benchmark selectors and collapsed numeric table. Figure 9(a) follows as a separate 100-task experiment, then two compact Table 2 charts show output throughput and P95 latency across concurrency 8–16. The complete Table 2 and replay protocol are collapsed below. `static/js/serving.js` is the single numeric source for these two charts and the full serving table. It transcribes the supplied paper’s Table 2; these Top-80 measurements are distinct from Figure 9(a), and neither changes the headline benchmark aggregation. No Figure 7 or Cache-As-Tool section is included. RSI remains the sole policy-search example.
 
 ## Hero cache flow
 
@@ -48,7 +52,7 @@ Per the owner's instruction, authors, paper URL, code URL, and citation are inte
 
 ## Editing / preview
 
-Edit `content.html`, `page.json`, and `static/css/index.css`. Interactive behavior and benchmark table data live in `static/js/index.js`; replay math is in `static/js/replay-math.js`.
+Edit `content.html`, `page.json`, and `static/css/index.css`. Interactive behavior and benchmark table data live in `static/js/index.js`; replay math is in `static/js/replay-math.js`; Table 2 data and rendering live in `static/js/serving.js`.
 
 ```sh
 npm run check
