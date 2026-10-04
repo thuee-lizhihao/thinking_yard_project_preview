@@ -9,6 +9,7 @@
     "generate": "node scripts/generate.mjs",
     "build": "npm run generate && next build && node scripts/validate.mjs out",
     "preview": "node scripts/preview.mjs",
+    "publish:preview": "node scripts/publish-preview.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm run generate && tsc --noEmit && npm test",
     "new:project": "node scripts/new-project.mjs"
