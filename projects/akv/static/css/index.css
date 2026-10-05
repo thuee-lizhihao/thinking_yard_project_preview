@@ -109,6 +109,22 @@ main a{text-decoration:none}main button,main select,main input{font:inherit}main
 #system .akv-detail + .akv-detail { margin-top:0; border-top:0; }
 
 /* A paired history / KV flow frames the hero without covering its text. */
+.akv-comparison article { display:flex; flex-direction:column; min-width:0; }
+.akv-comparison article > .akv-number { min-height:25px; display:flex; align-items:center; }
+.akv-comparison article > p:not(.akv-number) { min-height:78px; }
+.akv-core-animation { display:block; width:100%; height:auto; margin:18px 0 0; border-radius:12px; }
+.akv-ours-badge { display:inline-block; margin-left:8px; padding:4px 7px; border-radius:5px; background:#e5efdc; color:#456636; font-size:9px; }
+.akv-core-benefits { list-style:none; padding:0; margin:20px 0 0; display:grid; gap:12px; font-size:15px; line-height:1.5; color:#6e6e73; }
+.akv-core-benefits strong { color:#1d1d1f; }
+.akv-core-controls { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:20px 0 28px; color:#6e6e73; font-size:12px; }
+.akv-core-controls button { flex-shrink:0; min-height:44px; padding:8px 14px; border:1px solid #dcdce3; border-radius:22px; background:#fff; color:#1d1d1f; font:inherit; cursor:pointer; }
+.akv-core-controls button:focus-visible { outline:2px solid #0071e3; outline-offset:3px; }
+@media(max-width:900px) {
+  .akv-comparison { grid-template-columns:1fr; max-width:720px; margin-inline:auto; }
+  .akv-comparison article > p:not(.akv-number) { min-height:0; }
+  .akv-core-controls { flex-wrap:wrap; }
+}
+
 .akv-hero { isolation:isolate; overflow:hidden; }
 .akv-hero > :not(canvas):not(.akv-hero-wash):not(.akv-sr-only) { position:relative; z-index:2; }
 #akv-hero-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:0; }
