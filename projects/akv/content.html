@@ -20,27 +20,18 @@
       <div class="akv-heading">
         <p class="section-eyebrow">The core idea</p>
         <h2 class="section-title">From Context Engineering<br><span class="akv-gradient">to Cache Engineering.</span></h2>
-        <p class="akv-intro">As LLMs increasingly serve as agents, repeated reasoning and tool use produce longer trajectories, driving up KV storage and access costs. We introduce <strong>cache engineering</strong>, giving agents direct control over their active KV cache.</p>
+        <p class="akv-intro">LLM agents tackle increasingly long tasks through repeated reasoning, tool use, and interaction with environments. As their histories grow, KV storage and access become costly, and long contexts can degrade model quality. We introduce <strong>cache engineering</strong> to give agents direct control over their active KV cache, and <strong>AKV</strong>, a serving system that makes this control possible.</p>
       </div>
       <div class="akv-comparison">
-        <article>
-          <p class="akv-number">CONTEXT ENGINEERING</p>
-          <h3>Edit messages.<br>Recompute retained history.</h3>
-          <p>Trimming or summarizing earlier messages changes the prefix, invalidating subsequent KV states and requiring re-prefill of the retained suffix.</p>
-          <img class="akv-core-animation" src="static/figures/context-engineering-compact.png" data-animation="static/figures/context-engineering-compact.gif" width="720" height="274" alt="Message and Cache rows: removing message A invalidates B's KV. B is recomputed from the edited text before new message Q is prefilled.">
-        </article>
-        <article>
-          <p class="akv-number">CACHE ENGINEERING <span class="akv-ours-badge">OUR APPROACH</span></p>
-          <h3>Keep the messages.<br>Control the cache.</h3>
-          <p>Drop selected KV entries while directly reusing retained states.</p>
-          <img class="akv-core-animation" src="static/figures/cache-engineering-compact.png" data-animation="static/figures/cache-engineering-compact.gif" width="720" height="274" alt="Message and Cache rows: drop A's KV while keeping the messages. B's KV is reused without re-prefill and its gray inset still carries A's influence. Only new Q needs prefill.">
-          <ul class="akv-core-benefits">
-            <li><strong>Preserve historical information.</strong> Retained states can still carry information from messages whose KV has been dropped.</li>
-            <li><strong>Avoid re-prefill.</strong> Retained states stay reusable; only new input needs prefill.</li>
-          </ul>
-        </article>
+        <div class="akv-comparison-point">
+          <span class="akv-comparison-icon akv-comparison-cross" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></span>
+          <p><strong>Context Engineering</strong> trims or summarizes messages, changing the prefix and requiring re-prefill of the retained history.</p>
+        </div>
+        <div class="akv-comparison-point akv-comparison-ours">
+          <span class="akv-comparison-icon akv-comparison-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg></span>
+          <p><strong>Cache Engineering (ours)</strong> drops selected KV directly. Retained states can <em>preserve information from dropped history</em> and be <em>reused without re-prefill</em>.</p>
+        </div>
       </div>
-      <div class="akv-core-controls"><span>Gray inset: information carried from earlier history. Timing is schematic.</span><button id="core-animation-toggle" type="button" aria-pressed="false" hidden>Pause animations</button></div>
       <details class="akv-detail">
         <summary>Supporting observations: attention and cost <span aria-hidden="true">+</span></summary>
         <figure class="akv-figure akv-scheme"><div class="akv-figure-label"><span>FROM CONTEXT ENGINEERING TO CACHE ENGINEERING</span></div><img src="static/figures/scheme.svg" alt="Three approaches to historical context. Full-context inference reuses all KV. Context engineering deletes earlier text and recomputes the retained suffix. Cache engineering keeps the logical text history, drops selected KV, and reuses retained states." width="960" height="260" loading="lazy"><figcaption>Retained states can still carry information from earlier history, even after that history’s own KV entries have been dropped.</figcaption></figure>
@@ -65,6 +56,17 @@
       </div>
       </div>
 
+      <figure class="akv-core-demo" aria-labelledby="core-demo-title">
+        <div class="akv-core-demo-header">
+          <h3 id="core-demo-title">What happens to the cache?</h3>
+          <div class="akv-core-selector" role="group" aria-label="Engineering approach" hidden>
+            <button type="button" data-engineering="context" aria-pressed="false" aria-controls="core-animation">Context Engineering</button>
+            <button type="button" data-engineering="cache" aria-pressed="true" aria-controls="core-animation">Cache Engineering</button>
+          </div>
+        </div>
+        <img id="core-animation" class="akv-core-animation" src="static/figures/cache-engineering-compact.png" width="720" height="204" alt="Cache engineering keeps the messages and drops A's KV. B's retained KV still carries A's influence and is reused without re-prefill; only new Q needs prefill. Schematic timing.">
+        <div class="akv-core-controls"><button id="core-animation-toggle" type="button" aria-pressed="false" hidden>Pause animation</button></div>
+      </figure>
     </div>
   </section>
 
