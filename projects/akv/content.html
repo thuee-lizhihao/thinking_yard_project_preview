@@ -20,40 +20,20 @@
       <div class="akv-heading">
         <p class="section-eyebrow">The core idea</p>
         <h2 class="section-title">From Context Engineering<br><span class="akv-gradient">to Cache Engineering.</span></h2>
-        <p class="akv-intro">LLM agents tackle increasingly long tasks through repeated reasoning, tool use, and interaction with environments. As their histories grow, KV storage and access become costly, and long contexts can degrade model quality. We introduce <strong>cache engineering</strong> to give agents direct control over their active KV cache, and <strong>AKV</strong>, a serving system that makes this control possible.</p>
+        <p class="akv-intro">As LLM agents tackle longer tasks, their growing histories increase KV cache storage and access costs. Context engineering manages this growth through message edits. We introduce <strong>cache engineering</strong> to give agents direct control over their active KV cache, and <strong>AKV</strong>, an efficient serving system that enables it.</p>
       </div>
       <div class="akv-comparison">
         <div class="akv-comparison-point">
-          <span class="akv-comparison-icon akv-comparison-cross" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></span>
           <p><strong>Context Engineering</strong> trims or summarizes messages, changing the prefix and requiring re-prefill of the retained history.</p>
         </div>
         <div class="akv-comparison-point akv-comparison-ours">
-          <span class="akv-comparison-icon akv-comparison-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg></span>
-          <p><strong>Cache Engineering (ours)</strong> drops selected KV directly. Retained states can <em>preserve information from dropped history</em> and be <em>reused without re-prefill</em>.</p>
+          <p><strong>Cache Engineering (ours)</strong> drops selected KV directly. Retained states can preserve information from dropped history and be reused without re-prefill.</p>
         </div>
       </div>
-      <details class="akv-detail">
-        <summary>Supporting observations: attention and cost <span aria-hidden="true">+</span></summary>
-        <figure class="akv-figure akv-scheme"><div class="akv-figure-label"><span>FROM CONTEXT ENGINEERING TO CACHE ENGINEERING</span></div><img src="static/figures/scheme.svg" alt="Three approaches to historical context. Full-context inference reuses all KV. Context engineering deletes earlier text and recomputes the retained suffix. Cache engineering keeps the logical text history, drops selected KV, and reuses retained states." width="960" height="260" loading="lazy"><figcaption>Retained states can still carry information from earlier history, even after that history’s own KV entries have been dropped.</figcaption></figure>
-        <p class="akv-body">In the paper’s GPT-OSS-120B experiment on BrowseComp-Plus, dropping text while retaining the latest 12 tool rounds costs 1.85× as much as full-context inference because the retained suffix must be recomputed. Direct KV control avoids this repeated prefill.</p>
-        <div class="akv-evidence-grid">
-          <figure class="akv-figure"><img src="static/figures/attention-history.svg" alt="Figure 2: older tool responses receive less per-token attention than recent assistant responses." loading="lazy"><figcaption><strong>Attention over history.</strong> Per-token attention to assistant and tool responses, averaged over 10 BCP requests. Older tool responses receive relatively little direct attention.</figcaption></figure>
-          <figure class="akv-figure"><img src="static/figures/accuracy-cost.svg" alt="Figure 3: AKV rolling-drop settings achieve higher accuracy at lower cost than the evaluated summarization settings." loading="lazy"><figcaption><strong>Accuracy and cost.</strong> GPT-OSS-120B on the first 100 BCP questions. K is the number of retained tool rounds; 48K, 60K and 72K are summarization thresholds.</figcaption></figure>
-        </div>
-      </details>
       <div id="method" class="akv-operations">
         <p class="akv-number">THREE CACHE OPERATIONS</p>
         <h3>Append. Drop. Repos.</h3>
-        <p class="akv-body"><strong>Drop</strong> removes selected KV from future attention. The logical history stays intact, and the remaining states retain what they already computed—including information influenced by earlier history. No re-prefill of the retained states is needed.</p>
-      <div class="akv-operation-demo">
-        <div class="akv-segmented" role="group" aria-label="Cache operation"><button type="button" data-operation="append" aria-pressed="false">1. Append</button><button type="button" data-operation="drop" aria-pressed="true">2. Drop</button><button type="button" data-operation="repos" aria-pressed="false">3. Repos</button></div>
-        <div class="akv-cache-scene" data-stage="drop">
-          <div class="akv-cache-row"><span class="akv-row-label">Logical history</span><div class="akv-blocks"><span class="akv-block akv-old">Tool A</span><span class="akv-block akv-thought">Reasoning</span><span class="akv-block akv-recent">Tool B</span><span class="akv-block akv-new">New input</span></div></div>
-          <div class="akv-cache-row"><span class="akv-row-label">Active KV cache</span><div class="akv-blocks akv-live"><span class="akv-block akv-old" id="drop-block">K / V <small>pos 0</small></span><span class="akv-block akv-thought">K / V <small data-position="1">pos 1</small></span><span class="akv-block akv-recent">K / V <small data-position="2">pos 2</small></span><span class="akv-block akv-new">K / V <small data-position="3">pos 3</small></span></div></div>
-          <p class="akv-operation-caption" id="operation-caption" aria-live="polite"><strong>Drop.</strong> Remove Tool A’s KV from future attention. Retained states and the logical history stay unchanged.</p>
-        </div>
-        <p class="akv-fine">Append adds new input and generated tokens to the cache. Repos compacts the retained keys’ encoded positions; values and previously computed hidden states remain unchanged. Blocks are schematic message units.</p>
-      </div>
+        <p class="akv-body">To enable cache engineering, we define three cache operations: <strong>Append, Drop, and Repos</strong>. Agents combine them to control the active cache throughout execution.</p>
       </div>
 
       <figure class="akv-core-demo" aria-labelledby="core-demo-title">
@@ -64,9 +44,26 @@
             <button type="button" data-engineering="cache" aria-pressed="true" aria-controls="core-animation">Cache Engineering</button>
           </div>
         </div>
-        <img id="core-animation" class="akv-core-animation" src="static/figures/cache-engineering-compact.png" width="720" height="204" alt="Cache engineering keeps the messages and drops A's KV. B's retained KV still carries A's influence and is reused without re-prefill; only new Q needs prefill. Schematic timing.">
+        <img id="core-animation" class="akv-core-animation" src="static/figures/cache-engineering-compact.png" width="760" height="256" alt="Cache engineering keeps messages A, B and C. A's cache fades while B's retained cache keeps the yellow information from A. Only C's new cache entries appear in order. Schematic timing.">
         <div class="akv-core-controls"><button id="core-animation-toggle" type="button" aria-pressed="false" hidden>Pause animation</button></div>
       </figure>
+        <details class="akv-detail akv-method-detail">
+          <summary>Explore the three operations <span aria-hidden="true">+</span></summary>
+          <ul class="akv-operation-definitions">
+            <li><strong>Append:</strong> Add new tokens and their KV states.</li>
+            <li><strong>Drop:</strong> Remove selected KV entries from future attention while preserving the logical history and retained states.</li>
+            <li><strong>Repos:</strong> Adjust the positions encoded in retained keys, leaving values unchanged.</li>
+          </ul>
+        </details>
+      <details class="akv-detail">
+        <summary>Supporting observations: attention and cost <span aria-hidden="true">+</span></summary>
+        <figure class="akv-figure akv-scheme"><div class="akv-figure-label"><span>FROM CONTEXT ENGINEERING TO CACHE ENGINEERING</span></div><img src="static/figures/scheme.svg" alt="Three approaches to historical context. Full-context inference reuses all KV. Context engineering deletes earlier text and recomputes the retained suffix. Cache engineering keeps the logical text history, drops selected KV, and reuses retained states." width="960" height="260" loading="lazy"><figcaption>Retained states can still carry information from earlier history, even after that history’s own KV entries have been dropped.</figcaption></figure>
+        <p class="akv-body">In the paper’s GPT-OSS-120B experiment on BrowseComp-Plus, dropping text while retaining the latest 12 tool rounds costs 1.85× as much as full-context inference because the retained suffix must be recomputed. Direct KV control avoids this repeated prefill.</p>
+        <div class="akv-evidence-grid">
+          <figure class="akv-figure"><img src="static/figures/attention-history.svg" alt="Figure 2: older tool responses receive less per-token attention than recent assistant responses." loading="lazy"><figcaption><strong>Attention over history.</strong> Per-token attention to assistant and tool responses, averaged over 10 BCP requests. Older tool responses receive relatively little direct attention.</figcaption></figure>
+          <figure class="akv-figure"><img src="static/figures/accuracy-cost.svg" alt="Figure 3: AKV rolling-drop settings achieve higher accuracy at lower cost than the evaluated summarization settings." loading="lazy"><figcaption><strong>Accuracy and cost.</strong> GPT-OSS-120B on the first 100 BCP questions. K is the number of retained tool rounds; 48K, 60K and 72K are summarization thresholds.</figcaption></figure>
+        </div>
+      </details>
     </div>
   </section>
 

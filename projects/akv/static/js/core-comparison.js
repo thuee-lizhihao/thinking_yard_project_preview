@@ -6,8 +6,8 @@
   const choices = [...selector.querySelectorAll('button')];
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const descriptions = {
-    cache: "Cache engineering keeps the messages and drops A's KV. B's retained KV still carries A's influence and is reused without re-prefill; only new Q needs prefill. Schematic timing.",
-    context: "Context engineering removes message A, invalidating B's KV. B must be recomputed from the edited text before new Q is prefilled. Schematic timing."
+    cache: "Cache engineering keeps messages A, B and C. A's cache fades while B's retained cache keeps the yellow information from A. Only C's new cache entries appear in order. Schematic timing.",
+    context: "Context engineering removes message A. The old A and B caches fade, then new B cache entries appear in order, followed by C's cache. Schematic timing."
   };
   let approach = 'cache';
   let paused = motion.matches;
