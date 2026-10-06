@@ -19,32 +19,33 @@
     <div class="container-wide">
       <div class="akv-heading">
         <p class="section-eyebrow">The core idea</p>
-        <h2 class="section-title">From Context Engineering<br><span class="akv-gradient">to Cache Engineering.</span></h2>
-        <p class="akv-intro">As LLM agents tackle longer tasks, their growing histories increase KV cache storage and access costs. Context engineering manages this growth through message edits. We introduce <strong>cache engineering</strong> to give agents direct control over their active KV cache, and <strong>AKV</strong>, an efficient serving system that enables it.</p>
+        <h2 class="section-title">Give agents control<br><span class="akv-gradient">over their KV cache.</span></h2>
+        <p class="akv-intro">As LLM agents tackle longer tasks, growing histories make KV storage and access increasingly costly. Context engineering manages this growth through message edits, controlling the cache indirectly. We introduce <strong>cache engineering</strong> to give agents direct control over which KV states remain active.</p>
       </div>
       <div class="akv-comparison">
         <div class="akv-comparison-point">
-          <p><strong>Context Engineering</strong> trims or summarizes messages, changing the prefix and requiring re-prefill of the retained history.</p>
+          <h3>Context Engineering</h3>
+          <p>Edit messages to reduce the cache. Changing an earlier prefix invalidates subsequent KV states, requiring re-prefill of the retained history.</p>
         </div>
         <div class="akv-comparison-point akv-comparison-ours">
-          <p><strong>Cache Engineering (ours)</strong> drops selected KV directly. Retained states can preserve information from dropped history and be reused without re-prefill.</p>
+          <h3><span class="akv-gradient">Cache Engineering</span></h3>
+          <p>Drop selected KV directly. Retained states can preserve information from dropped history and be reused without re-prefill.</p>
         </div>
       </div>
       <div id="method" class="akv-operations">
-        <p class="akv-number">THREE CACHE OPERATIONS</p>
-        <h3>Append. Drop. Repos.</h3>
         <p class="akv-body">To enable cache engineering, we define three cache operations: <strong>Append, Drop, and Repos</strong>. Agents combine them to control the active cache throughout execution.</p>
       </div>
 
       <figure class="akv-core-demo" aria-labelledby="core-demo-title">
         <div class="akv-core-demo-header">
-          <h3 id="core-demo-title">What happens to the cache?</h3>
+          <h3 id="core-demo-title">Two ways to reduce the cache</h3>
           <div class="akv-core-selector" role="group" aria-label="Engineering approach" hidden>
             <button type="button" data-engineering="context" aria-pressed="false" aria-controls="core-animation">Context Engineering</button>
             <button type="button" data-engineering="cache" aria-pressed="true" aria-controls="core-animation">Cache Engineering</button>
           </div>
         </div>
-        <img id="core-animation" class="akv-core-animation" src="static/figures/cache-engineering-compact.png" width="760" height="256" alt="Cache engineering keeps messages A, B and C. A's cache fades while B's retained cache keeps the yellow information from A. Only C's new cache entries appear in order. Schematic timing.">
+        <img id="core-animation" class="akv-core-animation" src="static/figures/cache-engineering.svg" width="760" height="220" alt="Cache engineering keeps messages A, B and C. A's cache fades while B's retained cache keeps the yellow information from A. Only C's new cache entries appear in order. Schematic timing.">
+        <figcaption class="akv-core-caption">Inset blocks represent information carried from earlier messages.</figcaption>
         <div class="akv-core-controls"><button id="core-animation-toggle" type="button" aria-pressed="false" hidden>Pause animation</button></div>
       </figure>
         <details class="akv-detail akv-method-detail">
@@ -55,15 +56,6 @@
             <li><strong>Repos:</strong> Adjust the positions encoded in retained keys, leaving values unchanged.</li>
           </ul>
         </details>
-      <details class="akv-detail">
-        <summary>Supporting observations: attention and cost <span aria-hidden="true">+</span></summary>
-        <figure class="akv-figure akv-scheme"><div class="akv-figure-label"><span>FROM CONTEXT ENGINEERING TO CACHE ENGINEERING</span></div><img src="static/figures/scheme.svg" alt="Three approaches to historical context. Full-context inference reuses all KV. Context engineering deletes earlier text and recomputes the retained suffix. Cache engineering keeps the logical text history, drops selected KV, and reuses retained states." width="960" height="260" loading="lazy"><figcaption>Retained states can still carry information from earlier history, even after that history’s own KV entries have been dropped.</figcaption></figure>
-        <p class="akv-body">In the paper’s GPT-OSS-120B experiment on BrowseComp-Plus, dropping text while retaining the latest 12 tool rounds costs 1.85× as much as full-context inference because the retained suffix must be recomputed. Direct KV control avoids this repeated prefill.</p>
-        <div class="akv-evidence-grid">
-          <figure class="akv-figure"><img src="static/figures/attention-history.svg" alt="Figure 2: older tool responses receive less per-token attention than recent assistant responses." loading="lazy"><figcaption><strong>Attention over history.</strong> Per-token attention to assistant and tool responses, averaged over 10 BCP requests. Older tool responses receive relatively little direct attention.</figcaption></figure>
-          <figure class="akv-figure"><img src="static/figures/accuracy-cost.svg" alt="Figure 3: AKV rolling-drop settings achieve higher accuracy at lower cost than the evaluated summarization settings." loading="lazy"><figcaption><strong>Accuracy and cost.</strong> GPT-OSS-120B on the first 100 BCP questions. K is the number of retained tool rounds; 48K, 60K and 72K are summarization thresholds.</figcaption></figure>
-        </div>
-      </details>
     </div>
   </section>
 
